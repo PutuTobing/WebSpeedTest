@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedTest - SKY TECH</title>
+    <link rel="icon" type="image/png" href="https://pututobing.btd.co.id/AS142264.png">
+    <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=10">
+</head>
+<body>
+    <!-- Particle Canvas Background -->
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="https://btd.co.id/">
+                    <img src="https://pututobing.btd.co.id/AS142264.png" alt="SKY TECH Logo" class="logo-img">
+                    <span class="logo-brand-name"><span class="lbn-main">SKY TECH</span><span class="lbn-sub">PT. SKY Base Technologhy Digital</span></span>
+                </a>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="https://btd.co.id/" class="nav-link">Beranda</a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">Daftar</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">Daftar Berlangganan SKY HOME</a></li>
+                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server&body=Saya%20ingin%20ikut%20serta%20dalam%20pengembangan%20speedtest%20server%20localhost%20pada%20ISP%20regional." class="dropdown-link">Daftar Speedtest Server</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">Login</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="login.html" class="dropdown-link">Login Speedtest Server</a></li>
+                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">Login Layanan Pelanggan</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile menu overlay backdrop -->
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <!-- Hidden elements kept for JS compatibility -->
+    <div aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none">
+        <span id="current-server"></span>
+        <div id="progress-container">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <main class="st-main">
+
+        <!-- ── HERO ────────────────────────────────────────────── -->
+        <section class="st-hero">
+            <div class="st-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Network Speed Test
+            </div>
+
+            <h1 class="st-title">Uji Kecepatan <span class="gradient-word">Internet</span></h1>
+            <p class="st-subtitle">Cek kecepatan koneksi internet kamu secara real-time</p>
+
+            <!-- Server picker -->
+            <div class="st-server-picker-wrap">
+                <svg class="ssp-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                <select id="server-select">
+                    <option value="">— Memilih server terbaik… —</option>
+                </select>
+                <svg class="ssp-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <p class="st-auto-hint" id="st-auto-hint"></p>
+
+            <!-- Server info tri-cards -->
+            <div class="st-server-cards">
+                <div class="st-server-card">
+                    <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                    <div class="sc-text">
+                        <span class="sc-label">Server</span>
+                        <span class="sc-value" id="sc-server">Pilih server terlebih dahulu</span>
+                    </div>
+                </div>
+                <div class="st-server-card">
+                    <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <div class="sc-text">
+                        <span class="sc-label">Lokasi</span>
+                        <span class="sc-value" id="sc-location">—</span>
+                    </div>
+                </div>
+                <div class="st-server-card">
+                    <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                    <div class="sc-text">
+                        <span class="sc-label">Jarak</span>
+                        <span class="sc-value sc-waiting" id="sc-distance">—</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── GAUGE ────────────────────────────────────────────── -->
+        <section class="st-gauge-section">
+            <div class="st-gauge">
+                <svg class="gauge-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="60%" stop-color="#a855f7"/>
+                            <stop offset="100%" stop-color="#06b6d4"/>
+                        </linearGradient>
+                        <!-- Download gradient: cyan/teal -->
+                        <linearGradient id="gaugeGradDownload" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#06b6d4"/>
+                            <stop offset="100%" stop-color="#22d3ee"/>
+                        </linearGradient>
+                        <!-- Upload gradient: orange/amber -->
+                        <linearGradient id="gaugeGradUpload" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f97316"/>
+                            <stop offset="100%" stop-color="#fbbf24"/>
+                        </linearGradient>
+                        <filter id="gaugeGlow">
+                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Track arc (background) -->
+                    <circle class="gauge-track" cx="120" cy="120" r="100"
+                        stroke-dasharray="471 157"
+                        transform="rotate(135 120 120)"/>
+                    <!-- Progress arc (animated) -->
+                    <circle class="gauge-arc" id="gauge-progress" cx="120" cy="120" r="100"
+                        stroke-dasharray="0 628"
+                        transform="rotate(135 120 120)"
+                        filter="url(#gaugeGlow)"/>
+                </svg>
+                <button class="gauge-btn" id="start-test" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span class="gauge-btn-label">MULAI</span>
+                    <!-- In-button live display (shown while testing) -->
+                    <div class="gauge-display" id="gauge-display">
+                        <span class="gd-label" id="gd-label">PING</span>
+                        <span class="gd-value" id="gd-value">—</span>
+                        <span class="gd-unit" id="gd-unit">ms</span>
+                    </div>
+                </button>
+            </div>
+            <p class="gauge-phase" id="progress-text">Siap untuk Test</p>
+        </section>
+
+        <!-- ── METRICS ─────────────────────────────────────────── -->
+        <div class="st-metrics">
+            <div class="metric-card ping">
+                <div class="metric-card-top">
+                    <span class="metric-label">PING</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-val" id="ping-result">—</span>
+                    <span class="metric-unit">ms</span>
+                </div>
+            </div>
+            <div class="metric-card jitter">
+                <div class="metric-card-top">
+                    <span class="metric-label">JITTER</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-val" id="jitter-result">—</span>
+                    <span class="metric-unit">ms</span>
+                </div>
+            </div>
+            <div class="metric-card download">
+                <div class="metric-card-top">
+                    <span class="metric-label">UNDUHAN</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-val" id="download-result">—</span>
+                    <span class="metric-unit">Mbps</span>
+                </div>
+            </div>
+            <div class="metric-card upload">
+                <div class="metric-card-top">
+                    <span class="metric-label">UNGGAHAN</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-val" id="upload-result">—</span>
+                    <span class="metric-unit">Mbps</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stop button (shown only during test via JS) -->
+        <div class="st-stop-wrap" id="st-stop-wrap" style="display:none">
+            <button id="stop-test" class="btn-secondary">⏹ Hentikan Test</button>
+        </div>
+
+        <!-- ── CLIENT INFO (IP / ISP / ASN) ─────────────────────── -->
+        <div class="cib-section">
+            <div class="client-info-bar" id="client-info-bar">
+                <div class="cib-item">
+                    <svg class="cib-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <div class="cib-text">
+                        <span class="cib-label">IP Anda</span>
+                        <span class="cib-value" id="cib-ip"><span class="cib-loading">Mendeteksi…</span></span>
+                    </div>
+                </div>
+                <div class="cib-sep"></div>
+                <div class="cib-item">
+                    <svg class="cib-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <div class="cib-text">
+                        <span class="cib-label">ISP / Perusahaan</span>
+                        <span class="cib-value" id="cib-isp"><span class="cib-loading">…</span></span>
+                    </div>
+                </div>
+                <div class="cib-sep"></div>
+                <div class="cib-item">
+                    <svg class="cib-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <div class="cib-text">
+                        <span class="cib-label">AS Number</span>
+                        <span class="cib-value" id="cib-asn"><span class="cib-loading">…</span></span>
+                    </div>
+                </div>
+                <div class="cib-sep"></div>
+                <div class="cib-item">
+                    <svg class="cib-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <div class="cib-text">
+                        <span class="cib-label">Lokasi</span>
+                        <span class="cib-value" id="cib-loc"><span class="cib-loading">…</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── HISTORY ──────────────────────────────────────────── -->
+        <div class="st-history">
+            <div class="st-history-hdr">
+                <h3>Riwayat Test</h3>
+                <button class="st-history-clear" onclick="clearHistory()">Hapus Semua</button>
+            </div>
+            <div id="history-container">
+                <p class="no-history">Belum ada riwayat test</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── CONTACT / JOIN SECTION ───────────────────────────── -->
+    <section class="join-section">
+        <div class="join-inner">
+            <div class="join-heading">
+                <h2 class="join-title">Segera Bergabung <span>Dengan Kami</span></h2>
+                <p class="join-subtitle">Nikmati layanan internet tanpa harus Drama.</p>
+            </div>
+
+            <div class="join-cols">
+                <!-- LEFT: Contact Info -->
+                <div class="join-left">
+                    <h4 class="join-group-title">Informasi Kontak</h4>
+                    <ul class="join-contact-list">
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <div>
+                                <strong>Email</strong>
+                                <a href="mailto:office@btd.co.id?subject=Ingin%20Berlangganan%20SKY%20TECH&body=Halo%2C%20saya%20ingin%20berlangganan%20layanan%20internet%20SKY%20TECH.">office@btd.co.id</a>
+                            </div>
+                        </li>
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <div>
+                                <strong>Telepon</strong>
+                                <a href="https://wa.me/6282217835764" target="_blank" rel="noopener noreferrer">+62 822-1783-5764</a>
+                            </div>
+                        </li>
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <div>
+                                <strong>Lokasi</strong>
+                                <a href="https://maps.app.goo.gl/HsNaNEsfPRda8DDHA" target="_blank" rel="noopener noreferrer">Lampung Timur, Lampung, Indonesia</a>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <h4 class="join-group-title" style="margin-top:22px">Ketersediaan</h4>
+                    <p class="join-avail-text">Terbuka untuk proyek konsultasi, implementasi jaringan, dan kerjasama bisnis. Response time: 1-2 hari kerja.</p>
+                </div>
+
+                <!-- RIGHT: Social + Quick Contact -->
+                <div class="join-right">
+                    <h4 class="join-group-title">Social Media &amp; Professional Network</h4>
+                    <div class="join-socials">
+                        <!-- TikTok -->
+                        <a href="https://www.tiktok.com/@sky_techn" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-tiktok">
+                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.3a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.26 8.26 0 0 0 4.83 1.55V6.84a4.85 4.85 0 0 1-1.07-.15z"/></svg>
+                            <div>
+                                <span class="jsoc-name">TikTok</span>
+                                <span class="jsoc-sub">Follow</span>
+                            </div>
+                        </a>
+                        <!-- Facebook icon → TikTok link -->
+                        <a href="https://www.tiktok.com/@sky_techn" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-fb">
+                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                            <div>
+                                <span class="jsoc-name">Facebook</span>
+                                <span class="jsoc-sub">Follow</span>
+                            </div>
+                        </a>
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/6282217835764" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-wa">
+                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                            <div>
+                                <span class="jsoc-name">WhatsApp</span>
+                                <span class="jsoc-sub">call me</span>
+                            </div>
+                        </a>
+                        <!-- Telegram -->
+                        <a href="https://t.me/+6282217835764" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-tg">
+                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                            <div>
+                                <span class="jsoc-name">Telegram</span>
+                                <span class="jsoc-sub">Message</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <h4 class="join-group-title" style="margin-top:22px">Kontak Cepat</h4>
+                    <p class="join-quick-desc">Untuk inquiry mendesak atau konsultasi awal, hubungi langsung via WhatsApp atau Telegram.</p>
+                    <div class="join-quick-btns">
+                        <a href="https://wa.me/6282217835764" target="_blank" rel="noopener noreferrer" class="join-btn join-btn-wa">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                            WhatsApp
+                        </a>
+                        <a href="mailto:office@btd.co.id?subject=Ingin%20Berlangganan%20SKY%20TECH&body=Halo%2C%20saya%20ingin%20berlangganan%20layanan%20internet%20SKY%20TECH." class="join-btn join-btn-email">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>PT SKY Base Technologhy Digital © 2026</p>
+    </footer>
+
+    <script>
+    /* ── Particle Constellation Background ─────────────────────── */
+    (function () {
+        const canvas = document.getElementById('particle-canvas');
+        const ctx    = canvas.getContext('2d');
+        let W, H, particles;
+        const COUNT    = 80;
+        const MAX_DIST = 140;
+        const SPEED    = 0.35;
+
+        function resize() {
+            W = canvas.width  = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+
+        function isDark() {
+            return document.documentElement.getAttribute('data-theme') !== 'light';
+        }
+
+        function mkParticle() {
+            const angle = Math.random() * Math.PI * 2;
+            const spd   = SPEED * (0.4 + Math.random() * 0.8);
+            return {
+                x:  Math.random() * W,
+                y:  Math.random() * H,
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
+                r:  1 + Math.random() * 1.5
+            };
+        }
+
+        function init() { resize(); particles = Array.from({ length: COUNT }, mkParticle); }
+
+        function draw() {
+            const dark = isDark();
+            ctx.clearRect(0, 0, W, H);
+
+            for (const p of particles) {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > W) p.vx *= -1;
+                if (p.y < 0 || p.y > H) p.vy *= -1;
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < MAX_DIST) {
+                        const alpha = (1 - dist / MAX_DIST) * (dark ? 0.25 : 0.18);
+                        ctx.beginPath();
+                        ctx.strokeStyle = dark
+                            ? `rgba(129,140,248,${alpha.toFixed(3)})`
+                            : `rgba(99,102,241,${alpha.toFixed(3)})`;
+                        ctx.lineWidth = 0.7;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            for (const p of particles) {
+                ctx.beginPath();
+                ctx.fillStyle = dark ? 'rgba(129,140,248,0.65)' : 'rgba(99,102,241,0.45)';
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        init();
+        draw();
+    })();
+    </script>
+
+    <script src="js/config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/client-info.js"></script>
+    <script src="js/theme.js?v=3"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script src="js/storage.js?v=2"></script>
+    <script src="js/speedtest.js?v=7"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Mobile menu toggle
+            const navToggle = document.getElementById('nav-toggle');
+            const navMenu   = document.getElementById('nav-menu');
+            const navOverlay = document.getElementById('nav-overlay');
+
+            function openMenu() {
+                navMenu.classList.add('active');
+                navToggle.classList.add('open');
+                navOverlay.style.display = 'block';
+                requestAnimationFrame(() => navOverlay.classList.add('active'));
+                document.body.style.overflow = 'hidden';
+            }
+            function closeMenu() {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('open');
+                navOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(() => { navOverlay.style.display = 'none'; }, 280);
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            }
+
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', e => {
+                    e.stopPropagation();
+                    navMenu.classList.contains('active') ? closeMenu() : openMenu();
+                });
+            }
+            if (navOverlay) {
+                navOverlay.addEventListener('click', closeMenu);
+            }
+
+            // Dropdown menus
+            document.querySelectorAll('.dropdown').forEach(dd => {
+                const toggle = dd.querySelector('.dropdown-toggle');
+                const menu   = dd.querySelector('.dropdown-menu');
+                if (!toggle || !menu) return;
+                toggle.addEventListener('click', e => {
+                    e.preventDefault(); e.stopPropagation();
+                    document.querySelectorAll('.dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+                    menu.classList.toggle('show');
+                });
+            });
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            });
+
+            // Server info cards update on select change
+            const sel = document.getElementById('server-select');
+            sel.addEventListener('change', () => {
+                const url = sel.value;
+                const opt = sel.options[sel.selectedIndex];
+                const name     = opt.dataset.name     || opt.text;
+                const location = opt.dataset.location || '—';
+                const website  = opt.dataset.website  || '';
+
+                const scServer = document.getElementById('sc-server');
+                if (!url) {
+                    scServer.innerHTML = 'Pilih server terlebih dahulu';
+                } else if (website) {
+                    scServer.innerHTML = `<a href="${website}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline dotted" title="Kunjungi website ${name}">${name}</a>`;
+                } else {
+                    scServer.textContent = name;
+                }
+                document.getElementById('sc-location').textContent = url ? location : '—';
+
+                const distEl = document.getElementById('sc-distance');
+                if (!url) {
+                    distEl.textContent = '—';
+                    distEl.className   = 'sc-value sc-waiting';
+                    return;
+                }
+                distEl.textContent = 'Menghitung…';
+                distEl.className   = 'sc-value sc-checking';
+                calcServerDistance(url).then(r => {
+                    distEl.textContent = r.text;
+                    distEl.className   = `sc-value ${r.cls}`;
+                });
+            });
+
+            // Stop bar visibility — watch disabled attribute of stop button
+            const stopBtn  = document.getElementById('stop-test');
+            const stopWrap = document.getElementById('st-stop-wrap');
+            if (stopBtn && stopWrap) {
+                new MutationObserver(() => {
+                    stopWrap.style.display = stopBtn.disabled ? 'none' : 'flex';
+                }).observe(stopBtn, { attributes: true, attributeFilter: ['disabled'] });
+            }
+
+            // Gauge button running class — animate while test runs
+            const startBtn = document.getElementById('start-test');
+            if (startBtn && stopBtn) {
+                new MutationObserver(() => {
+                    const testing = startBtn.disabled && !stopBtn.disabled;
+                    startBtn.classList.toggle('running', testing);
+                }).observe(startBtn, { attributes: true, attributeFilter: ['disabled'] });
+            }
+
+            // Load approved servers from storage into dropdown
+            await loadApprovedServersToDropdown();
+            // Re-render history now that dropdown options are populated (enriches old entries)
+            if (typeof loadHistory === 'function') await loadHistory();
+        });
+
+        async function loadApprovedServersToDropdown() {
+            const serverSelect = document.getElementById('server-select');
+            const autoHint = document.getElementById('st-auto-hint');
+            if (!serverSelect) return;
+            const endpoints = typeof getApprovedServersForDropdown === 'function' ? await getApprovedServersForDropdown() : [];
+
+            // Remove any previously-injected group
+            serverSelect.querySelectorAll('optgroup').forEach(og => og.remove());
+            // Remove disabled hints
+            [...serverSelect.options].filter(o => o.disabled && o.value === '').slice(1).forEach(o => o.remove());
+
+            if (endpoints.length === 0) {
+                const hint = document.createElement('option');
+                hint.disabled = true;
+                hint.textContent = 'Belum ada server aktif — hubungi administrator';
+                serverSelect.appendChild(hint);
+                return;
+            }
+
+            const group = document.createElement('optgroup');
+            group.label = 'Server Aktif';
+            endpoints.forEach(ep => {
+                const opt = document.createElement('option');
+                opt.value              = ep.value;
+                opt.dataset.name       = ep.name     || ep.label;
+                opt.dataset.location   = ep.location || '';
+                opt.dataset.website    = ep.website  || '';
+                opt.textContent        = ep.label;
+                group.appendChild(opt);
+            });
+            serverSelect.appendChild(group);
+
+            // Auto-select server with lowest latency
+            if (autoHint) autoHint.textContent = '⏳ Memilih server terbaik berdasarkan latensi…';
+            const results = await Promise.all(endpoints.map(async ep => {
+                const ac = new AbortController();
+                const t = setTimeout(() => ac.abort(), 3000);
+                const start = performance.now();
+                try {
+                    await fetch(`${ep.value}/ping`, { cache: 'no-cache', signal: ac.signal });
+                    clearTimeout(t);
+                    return { ep, latency: Math.round(performance.now() - start) };
+                } catch { clearTimeout(t); return { ep, latency: Infinity }; }
+            }));
+            const best = results.filter(r => r.latency < Infinity).sort((a, b) => a.latency - b.latency)[0];
+            if (best) {
+                serverSelect.value = best.ep.value;
+                serverSelect.dispatchEvent(new Event('change'));
+                if (autoHint) autoHint.textContent = `✓ Dipilih otomatis: ${best.ep.name || best.ep.label} (${best.latency} ms)`;
+                setTimeout(() => { if (autoHint) autoHint.textContent = ''; }, 5000);
+            } else {
+                if (autoHint) autoHint.textContent = '';
+            }
+        }
+
+        /* ── Distance helpers ─────────────────────────────── */
+        let _userCoords = null;
+        const _svrGeoCache = new Map();
+
+        function _haversineKm(lat1, lon1, lat2, lon2) {
+            const R = 6371, r = d => d * Math.PI / 180;
+            const dLat = r(lat2 - lat1), dLon = r(lon2 - lon1);
+            const a = Math.sin(dLat/2)**2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function _isPrivate(host) {
+            return /^(localhost$|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+        }
+
+        async function _getUserCoords() {
+            if (_userCoords) return _userCoords;
+            try {
+                _userCoords = await new Promise((res, rej) => {
+                    if (!navigator.geolocation) return rej();
+                    navigator.geolocation.getCurrentPosition(
+                        p => res({ lat: p.coords.latitude, lon: p.coords.longitude }),
+                        rej, { timeout: 5000, maximumAge: 120000 }
+                    );
+                });
+                return _userCoords;
+            } catch {}
+            // Fallback: IP-based geolocation
+            try {
+                const d = await (await fetch('https://ip-api.com/json/?fields=status,lat,lon')).json();
+                if (d.status === 'success') { _userCoords = { lat: d.lat, lon: d.lon }; return _userCoords; }
+            } catch {}
+            return null;
+        }
+
+        async function calcServerDistance(serverUrl) {
+            try {
+                const host = new URL(serverUrl).hostname;
+                if (_isPrivate(host)) return { text: 'Lokal / LAN', cls: 'sc-online' };
+                // Get server geo (cached)
+                if (!_svrGeoCache.has(host)) {
+                    try {
+                        const d = await (await fetch(`https://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
+                        _svrGeoCache.set(host, d.status === 'success' ? { lat: d.lat, lon: d.lon } : null);
+                    } catch { _svrGeoCache.set(host, null); }
+                }
+                const sCoords = _svrGeoCache.get(host);
+                if (!sCoords) return { text: '—', cls: 'sc-waiting' };
+                const uCoords = await _getUserCoords();
+                if (!uCoords) return { text: '—', cls: 'sc-waiting' };
+                const km = _haversineKm(uCoords.lat, uCoords.lon, sCoords.lat, sCoords.lon);
+                const text = km < 1 ? '< 1 km' : `${Math.round(km).toLocaleString('id-ID')} km`;
+                return { text, cls: 'sc-online' };
+            } catch { return { text: '—', cls: 'sc-waiting' }; }
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('speedtest_history');
+            const hc = document.getElementById('history-container');
+            if (hc) hc.innerHTML = '<p class="no-history">Belum ada riwayat test</p>';
+        }
+    </script>
+</body>
+</html>

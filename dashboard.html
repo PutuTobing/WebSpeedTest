@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Speedtest Server Management</title>
+    <link rel="icon" type="image/png" href="https://pututobing.btd.co.id/AS142264.png">
+    <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=10">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="https://btd.co.id/">
+                    <img src="https://btd.co.id/LOGO%20SKY.png" alt="SKY TECH Logo" class="logo-img">
+                </a>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">SpeedTest</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                    </li>
+                    
+                    <li class="nav-item" id="admin-menu-item" style="display: none;">
+                        <a href="admin.html" class="nav-link">Admin Panel</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <span class="nav-link user-info" id="user-info">👤 User</span>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="#" class="nav-link btn-logout" id="logout-btn">Logout</a>
+                    </li>
+                </ul>
+                
+                <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
+                <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-sidebar">
+            <h3>📊 Dashboard Menu</h3>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-tab="monitor-server">
+                    <span class="menu-icon">🖥️</span>
+                    <span>Monitor Server</span>
+                </li>
+                <li class="menu-item" data-tab="custom-speedtest">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Custom Speedtest</span>
+                </li>
+                <li class="menu-item" data-tab="change-password">
+                    <span class="menu-icon">🔑</span>
+                    <span>Ganti Password</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Monitor Server Tab -->
+            <div id="monitor-server" class="tab-content active">
+                <div class="content-header">
+                    <h2>🖥️ Monitor Server</h2>
+                    <p>Kelola dan monitoring speedtest server Anda</p>
+                </div>
+
+                <div id="server-message" class="message"></div>
+
+                <!-- Form Tambah/Edit Server -->
+                <div class="form-section">
+                    <h3 id="form-title">➕ Tambah Server Baru</h3>
+                    <form id="server-form" class="server-form">
+                        <input type="hidden" id="server-id" name="server-id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="company-name">Nama Perusahaan *</label>
+                                <input type="text" id="company-name" name="company-name" class="form-input" placeholder="Contoh: PT Sky Technology" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="server-location">Lokasi Server (Kota) *</label>
+                                <input type="text" id="server-location" name="server-location" class="form-input" placeholder="Contoh: Jakarta" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bandwidth-capacity">Kapasitas Bandwidth *</label>
+                                <select id="bandwidth-capacity" name="bandwidth-capacity" class="form-input" required>
+                                    <option value="">-- Pilih Kapasitas --</option>
+                                    <option value="<1Gbps">< 1 Gbps</option>
+                                    <option value=">1Gbps">> 1 Gbps</option>
+                                    <option value="1-10Gbps">1 - 10 Gbps</option>
+                                    <option value=">10Gbps">> 10 Gbps</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="server-url">URL Speedtest Server *</label>
+                                <input type="text" id="server-url" name="server-url" class="form-input" placeholder="Contoh: serverspeedtest1.skytech.id:8080" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cpu-cores">CPU Cores *</label>
+                                <input type="number" id="cpu-cores" name="cpu-cores" class="form-input" placeholder="Contoh: 8" min="1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ram-size">RAM (GB) *</label>
+                                <input type="number" id="ram-size" name="ram-size" class="form-input" placeholder="Contoh: 16" min="1" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact-name">Nama Lengkap *</label>
+                                <input type="text" id="contact-name" name="contact-name" class="form-input" placeholder="Nama lengkap PIC" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact-email">Email *</label>
+                                <input type="email" id="contact-email" name="contact-email" class="form-input" placeholder="email@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="company-website">Website Perusahaan</label>
+                            <input type="url" id="company-website" name="company-website" class="form-input" placeholder="https://www.contoh.co.id (opsional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="additional-notes">Catatan Tambahan</label>
+                            <textarea id="additional-notes" name="additional-notes" class="form-input" rows="3" placeholder="Informasi tambahan (opsional)"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">💾 Simpan Server</button>
+                            <button type="button" class="btn-secondary" id="cancel-edit-btn" style="display: none;">❌ Batal</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- List Server yang sudah terdaftar -->
+                <div class="server-list-section" style="margin-top: 32px;">
+                    <h3>📋 Server Terdaftar</h3>
+                    <div id="server-list" class="server-list">
+                        <p class="no-data">Belum ada server terdaftar</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Speedtest Tab -->
+            <div id="custom-speedtest" class="tab-content">
+                <div class="content-header">
+                    <h2>⚙️ Custom Speedtest</h2>
+                    <p>Fitur kustomisasi speedtest</p>
+                </div>
+
+                <div class="coming-soon">
+                    <div class="coming-soon-icon">🚧</div>
+                    <h3>Menu Akan Datang</h3>
+                    <p>Fitur Custom Speedtest sedang dalam pengembangan</p>
+                    <p class="text-muted">Stay tuned untuk update selanjutnya!</p>
+                </div>
+            </div>
+
+            <!-- Change Password Tab -->
+            <div id="change-password" class="tab-content">
+                <div class="content-header">
+                    <h2>🔑 Ganti Password</h2>
+                    <p>Ubah password akun Anda</p>
+                </div>
+
+                <div id="password-message" class="message"></div>
+
+                <div class="form-section" style="max-width: 600px;">
+                    <form id="change-password-form" class="server-form">
+                        <div class="form-group">
+                            <label for="current-password">Password Saat Ini *</label>
+                            <input type="password" id="current-password" name="current-password" class="form-input" required autocomplete="current-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-password">Password Baru *</label>
+                            <input type="password" id="new-password" name="new-password" class="form-input" minlength="6" required autocomplete="new-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-password">Konfirmasi Password Baru *</label>
+                            <input type="password" id="confirm-password" name="confirm-password" class="form-input" minlength="6" required autocomplete="new-password">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">🔄 Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js?v=3"></script>
+    <script src="js/api-client.js?v=3"></script>
+    <script src="js/theme.js?v=3"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script src="js/storage.js?v=3"></script>
+    <script src="js/dashboard.js?v=3"></script>
+</body>
+</html>

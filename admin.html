@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Speedtest Server Management</title>
+    <link rel="icon" type="image/png" href="https://pututobing.btd.co.id/AS142264.png">
+    <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=10">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="https://btd.co.id/">
+                    <img src="https://btd.co.id/LOGO%20SKY.png" alt="SKY TECH Logo" class="logo-img">
+                </a>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">SpeedTest</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="admin.html" class="nav-link active">Admin Panel</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <span class="nav-link clock-display" id="admin-clock">--:--:--</span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link user-info" id="user-info">👤 Admin</span>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="#" class="nav-link btn-logout" id="logout-btn">Logout</a>
+                    </li>
+                </ul>
+                
+                <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
+                <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-sidebar">
+            <h3>👨‍💼 Admin Menu</h3>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-tab="manage-users">
+                    <span class="menu-icon">👥</span>
+                    <span>Kelola User</span>
+                </li>
+                <li class="menu-item" data-tab="server-approvals">
+                    <span class="menu-icon">✅</span>
+                    <span>Approval Server</span>
+                </li>
+                <li class="menu-item" data-tab="all-servers">
+                    <span class="menu-icon">🌐</span>
+                    <span>Semua Server</span>
+                </li>
+                <li class="menu-item" data-tab="endpoint-manager">
+                    <span class="menu-icon">⚡</span>
+                    <span>Server Endpoint</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Manage Users Tab -->
+            <div id="manage-users" class="tab-content active">
+                <div class="content-header">
+                    <h2>👥 Kelola User</h2>
+                    <p>Manajemen akun administrator dan user</p>
+                </div>
+
+                <div id="user-message" class="message"></div>
+
+                <div class="action-section">
+                    <button class="btn-primary" id="add-user-btn">➕ Tambah User Baru</button>
+                </div>
+
+                <!-- User List -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Nama Lengkap</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="6" class="no-data">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add/Edit User Modal -->
+                <div id="user-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="user-modal-title">Tambah User Baru</h3>
+                            <span class="close-modal" id="close-user-modal">&times;</span>
+                        </div>
+                        <form id="user-form" class="modal-form">
+                            <input type="hidden" id="edit-username" name="edit-username">
+                            
+                            <div class="form-group">
+                                <label for="new-username">Username *</label>
+                                <input type="text" id="new-username" name="new-username" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="user-role">Role *</label>
+                                <select id="user-role" name="user-role" class="form-input" required>
+                                    <option value="user">User</option>
+                                    <option value="admin">Administrator</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="user-fullname">Nama Lengkap *</label>
+                                <input type="text" id="user-fullname" name="user-fullname" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="user-email">Email *</label>
+                                <input type="email" id="user-email" name="user-email" class="form-input" required>
+                            </div>
+
+                            <div class="form-group" id="password-group">
+                                <label for="user-password">Password *</label>
+                                <input type="password" id="user-password" name="user-password" class="form-input" minlength="6">
+                                <small class="form-hint">Minimal 6 karakter</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Simpan</button>
+                                <button type="button" class="btn-secondary close-modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Modal -->
+                <div id="admin-password-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Ganti Password User</h3>
+                            <span class="close-modal" id="close-password-modal">&times;</span>
+                        </div>
+                        <form id="admin-password-form" class="modal-form">
+                            <input type="hidden" id="password-username" name="password-username">
+                            
+                            <div class="form-group">
+                                <label>Username:</label>
+                                <p id="password-user-display" class="form-text-display"></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin-new-password">Password Baru *</label>
+                                <input type="password" id="admin-new-password" name="admin-new-password" class="form-input" minlength="6" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin-confirm-password">Konfirmasi Password *</label>
+                                <input type="password" id="admin-confirm-password" name="admin-confirm-password" class="form-input" minlength="6" required>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Update Password</button>
+                                <button type="button" class="btn-secondary close-modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server Approvals Tab -->
+            <div id="server-approvals" class="tab-content">
+                <div class="content-header">
+                    <h2>✅ Approval Server</h2>
+                    <p>Review dan kelola status server submissions dari user</p>
+                </div>
+
+                <div id="approval-message" class="message"></div>
+
+                <!-- Status Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Semua</button>
+                    <button class="filter-tab" data-filter="pending">⏳ Pending</button>
+                    <button class="filter-tab" data-filter="checking">🔍 Checking</button>
+                    <button class="filter-tab" data-filter="approved">✅ Approved</button>
+                    <button class="filter-tab" data-filter="error">❌ Error</button>
+                </div>
+
+                <div id="approval-servers-list" class="approval-list">
+                    <p class="no-data">Loading...</p>
+                </div>
+            </div>
+
+            <!-- All Servers Tab -->
+            <div id="all-servers" class="tab-content">
+                <div class="content-header">
+                    <h2>🌐 Semua Server</h2>
+                    <p>Server yang telah disetujui — pemantauan uptime otomatis</p>
+                </div>
+
+                <div id="all-servers-message" class="message"></div>
+
+                <div class="action-section">
+                    <button class="btn-secondary" id="ping-all-btn">🔄 Cek Semua Server</button>
+                    <span class="auto-check-info" id="auto-check-info">Auto-check: menginisialisasi...</span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Perusahaan</th>
+                                <th>Lokasi</th>
+                                <th>URL Server</th>
+                                <th>Bandwidth</th>
+                                <th>Uptime</th>
+                                <th>Last Check</th>
+                                <th>Downtime</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-servers-table-body">
+                            <tr>
+                                <td colspan="8" class="no-data">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Edit Server Modal -->
+                <div id="edit-server-modal" class="modal">
+                    <div class="modal-content modal-large">
+                        <div class="modal-header">
+                            <h3>Edit Server</h3>
+                            <span class="close-modal" id="close-edit-server-modal">&times;</span>
+                        </div>
+                        <form id="edit-server-form" class="modal-form">
+                            <input type="hidden" id="edit-server-id" name="edit-server-id">
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-company-name">Nama Perusahaan *</label>
+                                    <input type="text" id="edit-company-name" name="edit-company-name" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="edit-server-location">Lokasi Server *</label>
+                                    <input type="text" id="edit-server-location" name="edit-server-location" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-bandwidth-capacity">Kapasitas Bandwidth *</label>
+                                    <select id="edit-bandwidth-capacity" name="edit-bandwidth-capacity" class="form-input" required>
+                                        <option value="<1Gbps">< 1 Gbps</option>
+                                        <option value=">1Gbps">> 1 Gbps</option>
+                                        <option value="1-10Gbps">1 - 10 Gbps</option>
+                                        <option value=">10Gbps">> 10 Gbps</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="edit-server-url">URL Server *</label>
+                                    <input type="text" id="edit-server-url" name="edit-server-url" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-cpu-cores">CPU Cores *</label>
+                                    <input type="number" id="edit-cpu-cores" name="edit-cpu-cores" class="form-input" min="1" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="edit-ram-size">RAM (GB) *</label>
+                                    <input type="number" id="edit-ram-size" name="edit-ram-size" class="form-input" min="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-contact-name">Nama PIC *</label>
+                                    <input type="text" id="edit-contact-name" name="edit-contact-name" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="edit-contact-email">Email *</label>
+                                    <input type="email" id="edit-contact-email" name="edit-contact-email" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edit-company-website">Website Perusahaan</label>
+                                <input type="url" id="edit-company-website" name="edit-company-website" class="form-input" placeholder="https://www.contoh.co.id">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edit-additional-notes">Catatan Tambahan</label>
+                                <textarea id="edit-additional-notes" name="edit-additional-notes" class="form-input" rows="2"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edit-server-status">Status *</label>
+                                <select id="edit-server-status" name="edit-server-status" class="form-input" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="checking">Checking</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="error">Error</option>
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Update Server</button>
+                                <button type="button" class="btn-secondary close-modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Endpoint Manager Tab -->
+            <div id="endpoint-manager" class="tab-content">
+                <div class="content-header">
+                    <h2>⚡ Kelola Endpoint Speedtest</h2>
+                    <p>Tambah dan kelola backend server speedtest yang tampil di dropdown</p>
+                </div>
+
+                <div id="endpoint-message" class="message"></div>
+
+                <div class="action-section">
+                    <button class="btn-primary" id="add-endpoint-btn">➕ Tambah Endpoint Baru</button>
+                </div>
+
+                <!-- Endpoint Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>URL Backend</th>
+                                <th>Lokasi</th>
+                                <th>API Endpoint</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="endpoints-table-body">
+                            <tr>
+                                <td colspan="6" class="no-data">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add / Edit Endpoint Modal -->
+                <div id="endpoint-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="endpoint-modal-title">Tambah Endpoint Baru</h3>
+                            <span class="close-modal" id="close-endpoint-modal">&times;</span>
+                        </div>
+                        <form id="endpoint-form" class="modal-form">
+                            <input type="hidden" id="endpoint-edit-id">
+
+                            <div class="form-group">
+                                <label for="endpoint-server-pick">Pilih dari Server Terdaftar</label>
+                                <select id="endpoint-server-pick" class="form-input">
+                                    <option value="">— Pilih server approved (opsional) —</option>
+                                </select>
+                                <small class="form-hint">Memilih server akan mengisi otomatis nama, URL, dan lokasi di bawah</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endpoint-name">Nama Server *</label>
+                                <input type="text" id="endpoint-name" class="form-input" placeholder="contoh: BTD Lampung" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endpoint-url">URL Backend *</label>
+                                <input type="url" id="endpoint-url" class="form-input" placeholder="http://0.0.0.0:8080" required>
+                                <small class="form-hint">Sertakan protokol (http:// atau https://) dan port bila ada</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endpoint-location">Lokasi *</label>
+                                <input type="text" id="endpoint-location" class="form-input" placeholder="contoh: Lampung, Indonesia" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>API Endpoint (otomatis)</label>
+                                <div class="endpoint-api-preview">
+                                    <code class="api-row"><span class="api-method get">GET</span> <span class="api-path">/</span> — Status server</code>
+                                    <code class="api-row"><span class="api-method get">GET</span> <span class="api-path">/ping</span> — Latency test</code>
+                                    <code class="api-row"><span class="api-method get">GET</span> <span class="api-path">/download</span> — Download test</code>
+                                    <code class="api-row"><span class="api-method post">POST</span> <span class="api-path">/upload</span> — Upload test</code>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="endpoint-active">Status</label>
+                                <select id="endpoint-active" class="form-input">
+                                    <option value="true">Aktif</option>
+                                    <option value="false">Nonaktif</option>
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Simpan</button>
+                                <button type="button" class="btn-secondary close-modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js?v=3"></script>
+    <script src="js/api-client.js?v=3"></script>
+    <script src="js/theme.js?v=3"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script src="js/storage.js?v=3"></script>
+    <script src="js/admin.js?v=7"></script></script>
+</body>
+</html>

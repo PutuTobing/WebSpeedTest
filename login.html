@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Speedtest Server Management</title>
+    <link rel="icon" type="image/png" href="https://pututobing.btd.co.id/AS142264.png">
+    <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="https://btd.co.id/">
+                    <img src="https://btd.co.id/LOGO%20SKY.png" alt="SKY TECH Logo" class="logo-img">
+                </a>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="https://btd.co.id/" class="nav-link">Beranda</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">SpeedTest</a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">Daftar</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">Daftar Berlangganan SKY HOME</a></li>
+                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server&body=Saya%20ingin%20ikut%20serta%20dalam%20pengembangan%20speedtest%20server%20localhost%20pada%20ISP%20regional." class="dropdown-link">Daftar Speedtest Server</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle active">Login</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="login.html" class="dropdown-link active">Login Speedtest Server</a></li>
+                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">Login Layanan Pelanggan</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
+                <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>🔐 Login Speedtest Server</h2>
+                <p>Masuk ke Dashboard Management</p>
+            </div>
+
+            <div id="login-message" class="message"></div>
+
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Masukkan username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Masukkan password" required autocomplete="current-password">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me">
+                        <span>Ingat saya</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-login">Login</button>
+            </form>
+
+            <div class="login-footer">
+                <p class="help-text">Lupa password? Hubungi administrator</p>
+                <p class="help-text">Belum punya akun? <a href="mailto:noc@btd.co.id?subject=Request%20Akun%20Speedtest%20Server&body=Saya%20ingin%20mengajukan%20akun%20untuk%20speedtest%20server%20management.">Ajukan akun</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
