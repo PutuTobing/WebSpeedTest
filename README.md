@@ -21,8 +21,8 @@ Sistem monitoring kecepatan internet berbasis web dengan dashboard admin, manaje
 | Komponen | Versi Minimum |
 |----------|--------------|
 | OS       | Ubuntu 20.04 / Debian 10 / Linux Mint 20 |
-| RAM      | 512 MB |
-| Disk     | 2 GB |
+| RAM      | 6 Gb |
+| Disk     | 30 Gb |
 | Node.js  | 18 (diinstall otomatis) |
 | MySQL    | 8.0 / MariaDB 10.5 (diinstall otomatis) |
 | Python3  | 3.8+ (diinstall otomatis) |
