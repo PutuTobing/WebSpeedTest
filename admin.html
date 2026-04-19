@@ -8,7 +8,7 @@
     <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
     <!-- Animated Background -->
@@ -82,6 +82,10 @@
                 <li class="menu-item" data-tab="endpoint-manager">
                     <span class="menu-icon">⚡</span>
                     <span>Server Endpoint</span>
+                </li>
+                <li class="menu-item" data-tab="site-settings">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Pengaturan Situs</span>
                 </li>
             </ul>
         </div>
@@ -446,14 +450,198 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ── SITE SETTINGS TAB ──────────────────────────────────────────── -->
+            <div id="site-settings" class="tab-content">
+        <div class="content-header">
+            <h2>⚙️ Pengaturan Situs</h2>
+            <p>Kustomisasi tampilan dan informasi kontak yang ditampilkan di halaman utama</p>
         </div>
+
+        <div id="settings-message" class="message"></div>
+
+        <form id="site-settings-form" autocomplete="off">
+
+            <!-- ── Identitas / Branding ───────────────────────────────── -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">🏢 Identitas &amp; Branding</h3>
+                <div class="settings-grid">
+                    <div class="form-group">
+                        <label class="form-label">URL Logo</label>
+                        <input type="url" class="form-input" id="cfg-logo-url"
+                               placeholder="https://example.com/logo.png">
+                        <small class="form-hint">URL gambar logo yang ditampilkan di navbar</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nama Perusahaan (teks utama)</label>
+                        <input type="text" class="form-input" id="cfg-brand-main"
+                               placeholder="SKY TECH">
+                        <small class="form-hint">Teks besar di sebelah logo (contoh: SKY TECH)</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">Sub-nama Perusahaan</label>
+                        <input type="text" class="form-input" id="cfg-brand-sub"
+                               placeholder="PT. SKY Base Technologhy Digital">
+                        <small class="form-hint">Teks kecil di bawah nama utama</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Link Navbar ────────────────────────────────────────── -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">🔗 Link Navigasi</h3>
+                <div class="settings-grid">
+                    <div class="form-group">
+                        <label class="form-label">Link Daftar Berlangganan</label>
+                        <input type="url" class="form-input" id="cfg-link-register"
+                               placeholder="https://billing.example.com/auth/register">
+                        <small class="form-hint">Dropdown → Daftar Berlangganan SKY HOME</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Link Login Layanan Pelanggan</label>
+                        <input type="url" class="form-input" id="cfg-link-customer-login"
+                               placeholder="https://billing.example.com/auth">
+                        <small class="form-hint">Dropdown → Login Layanan Pelanggan</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Kontak ──────────────────────────────────────────────── -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">📞 Informasi Kontak</h3>
+                <div class="settings-grid">
+                    <div class="form-group">
+                        <label class="form-label">Email Perusahaan</label>
+                        <input type="email" class="form-input" id="cfg-email"
+                               placeholder="office@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nomor WhatsApp / Telepon</label>
+                        <input type="text" class="form-input" id="cfg-phone"
+                               placeholder="6282217835764">
+                        <small class="form-hint">Format internasional tanpa + (untuk link wa.me)</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">Alamat Kantor</label>
+                        <input type="text" class="form-input" id="cfg-address"
+                               placeholder="Lampung Timur, Lampung, Indonesia">
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">Link Google Maps</label>
+                        <input type="url" class="form-input" id="cfg-maps"
+                               placeholder="https://maps.app.goo.gl/...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Template Pesan ─────────────────────────────────────── -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">✉️ Template Pesan</h3>
+                <div class="settings-grid">
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">📧 Subjek Email (Subject)</label>
+                        <input type="text" class="form-input" id="cfg-email-subject"
+                               placeholder="Ingin Berlangganan SKY TECH">
+                        <small class="form-hint">Dipakai pada semua link mailto: di seluruh halaman</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">📧 Isi Pesan Email (Body)</label>
+                        <textarea class="form-input" id="cfg-email-body" rows="3"
+                                  placeholder="Halo, saya ingin berlangganan layanan internet SKY TECH."
+                                  style="resize:vertical;min-height:72px"></textarea>
+                        <small class="form-hint">Isi pesan default pada link mailto:</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">💬 Template Pesan WhatsApp</label>
+                        <textarea class="form-input" id="cfg-wa-message" rows="3"
+                                  placeholder="Halo, saya ingin berlangganan layanan internet SKY TECH."
+                                  style="resize:vertical;min-height:72px"></textarea>
+                        <small class="form-hint">Dipakai sebagai teks pre-isi pada semua tombol/link WhatsApp</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1/-1">
+                        <label class="form-label">✈️ Template Pesan Telegram</label>
+                        <textarea class="form-input" id="cfg-tg-message" rows="3"
+                                  placeholder="Halo, saya ingin berlangganan layanan internet SKY TECH."
+                                  style="resize:vertical;min-height:72px"></textarea>
+                        <small class="form-hint">Dipakai pada link t.me untuk pre-isi pesan (via share URL)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Social Media ───────────────────────────────────────── -->
+            <div class="settings-group">
+                <h3 class="settings-group-title">📱 Social Media</h3>
+                <div class="settings-grid">
+                    <div class="form-group">
+                        <label class="form-label">TikTok — URL Profil</label>
+                        <input type="url" class="form-input" id="cfg-social-tiktok"
+                               placeholder="https://www.tiktok.com/@username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Facebook — URL Profil</label>
+                        <input type="url" class="form-input" id="cfg-social-facebook"
+                               placeholder="https://facebook.com/pagename">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">WhatsApp — Nomor (format: 628xxx)</label>
+                        <input type="text" class="form-input" id="cfg-social-whatsapp"
+                               placeholder="6282217835764">
+                        <small class="form-hint">Tanpa + — dipakai untuk link wa.me/&lt;nomor&gt;</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telegram — Link atau Username</label>
+                        <input type="text" class="form-input" id="cfg-social-telegram"
+                               placeholder="+6282217835764 atau @username">
+                        <small class="form-hint">Bisa +628xxx (t.me/+628xxx) atau @username (t.me/username)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Preview & Aksi ─────────────────────────────────────── -->
+            <div class="settings-actions">
+                <button type="button" class="btn-secondary" id="settings-reset-btn">↺ Reset ke Default</button>
+                <button type="submit" class="btn-primary" id="settings-save-btn">💾 Simpan Pengaturan</button>
+            </div>
+
+        </form>
+
+        <!-- ── Backup & Restore ────────────────────────────────────── -->
+        <div class="settings-group" style="margin-top:28px">
+            <h3 class="settings-group-title">🗄️ Backup &amp; Restore Database</h3>
+            <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px">
+                Backup mencakup seluruh tabel database (site settings, users, endpoints, servers, history).
+                Restore akan menimpa data yang ada — pastikan file backup benar sebelum melanjutkan.
+            </p>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+                <!-- Backup -->
+                <div style="flex:1;min-width:240px;background:var(--bg-secondary);border-radius:8px;padding:18px 20px">
+                    <h4 style="font-size:0.9rem;font-weight:600;margin:0 0 8px">📥 Backup Database</h4>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 14px">Unduh file <code>.sql</code> berisi seluruh data database saat ini.</p>
+                    <button type="button" class="btn-primary" id="backup-download-btn" style="width:100%">⬇️ Unduh Backup (.sql)</button>
+                    <p id="backup-message" style="margin-top:10px;font-size:0.83rem"></p>
+                </div>
+                <!-- Restore -->
+                <div style="flex:1;min-width:240px;background:var(--bg-secondary);border-radius:8px;padding:18px 20px">
+                    <h4 style="font-size:0.9rem;font-weight:600;margin:0 0 8px">📤 Restore Database</h4>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 14px">Upload file <code>.sql</code> hasil backup untuk memulihkan data.</p>
+                    <label class="form-label" for="restore-file-input" style="font-size:0.82rem">Pilih file SQL:</label>
+                    <input type="file" id="restore-file-input" accept=".sql,text/plain"
+                           style="display:block;width:100%;margin:6px 0 12px;font-size:0.83rem">
+                    <button type="button" class="btn-secondary" id="restore-upload-btn"
+                            style="width:100%;border-color:var(--danger,#ef4444);color:var(--danger,#ef4444)">⚠️ Restore (Timpa Data)</button>
+                    <p id="restore-message" style="margin-top:10px;font-size:0.83rem"></p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="js/config.js?v=3"></script>
-    <script src="js/api-client.js?v=3"></script>
+    <script src="js/api-client.js?v=4"></script>
+    <script src="js/client-info.js?v=3"></script>
     <script src="js/theme.js?v=3"></script>
     <script src="js/auth.js?v=4"></script>
     <script src="js/storage.js?v=3"></script>
-    <script src="js/admin.js?v=7"></script></script>
+    <script src="js/admin.js?v=11"></script>
 </body>
 </html>

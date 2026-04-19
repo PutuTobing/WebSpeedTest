@@ -8,8 +8,8 @@
 (function () {
     'use strict';
 
-    const PRIMARY_URL   = 'https://ipinfo.io/json';
-    const FALLBACK_URL  = 'https://ip-api.com/json/?fields=status,query,isp,org,as,city,regionName,country,countryCode';
+    const PRIMARY_URL   = 'https://ip-api.com/json/?fields=status,query,isp,org,as,city,regionName,country,countryCode';
+    const FALLBACK_URL  = 'https://ipinfo.io/json';
     const TIMEOUT_MS    = 6000;
 
     function setText(id, html) {
@@ -27,8 +27,8 @@
 
     /**
      * Parse AS number and org name from ip-api "as" field.
-     * Example: "AS142264 PT Borneo Techno Data"
-     * Returns { asn: "AS142264", orgName: "PT Borneo Techno Data" }
+     * Example: "AS142264 PT SKY Base Technologhy Digital"
+     * Returns { asn: "AS142264", orgName: "PT SKY Base Technologhy Digital" }
      */
     function parseAS(asField) {
         if (!asField) return { asn: '—', orgName: '—' };
@@ -95,18 +95,22 @@
 
     async function detectClientInfo() {
         try {
+            // Try ip-api.com first (more accurate city/region data)
             const data = await fetchWithTimeout(PRIMARY_URL, TIMEOUT_MS);
-            // ipinfo.io returns { ip, org, city, region, country, ... }
-            if (data.ip) {
-                applyFallbackData(data);
+            if (data.status === 'success') {
+                applyPrimaryData(data);
             } else {
-                throw new Error('invalid response');
+                throw new Error('ip-api returned non-success');
             }
         } catch (_) {
-            // Fallback to ip-api.com
+            // Fallback to ipinfo.io
             try {
                 const data = await fetchWithTimeout(FALLBACK_URL, TIMEOUT_MS);
-                applyPrimaryData(data);
+                if (data.ip) {
+                    applyFallbackData(data);
+                } else {
+                    throw new Error('invalid response');
+                }
             } catch (__) {
                 setError('Gagal mendeteksi');
             }

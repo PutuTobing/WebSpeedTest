@@ -2589,3 +2589,37 @@ footer {
         font-size: 0.78rem;
     }
 }
+
+/* ── Site Settings Tab ────────────────────────────────────────────────────── */
+.settings-group {
+    background: var(--card-bg, #1a1a2e);
+    border: 1px solid var(--border, #2a2a4a);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+.settings-group-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent, #7c6ff7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border, #2a2a4a);
+}
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+}
+@media (max-width: 680px) {
+    .settings-grid { grid-template-columns: 1fr; }
+    .settings-grid .form-group[style*="grid-column"] { grid-column: auto !important; }
+}
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 4px;
+}

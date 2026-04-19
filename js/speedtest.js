@@ -1,9 +1,15 @@
 // SpeedTest Configuration
 const CONFIG = {
-    PARALLEL_CONNECTIONS: 10,
+    // HTTP/1.1 browsers allow max 6 concurrent connections per origin.
+    // Streaming downloads hold connections open for the full duration,
+    // so requests 7-10 never run. Use 6 for download.
+    DOWNLOAD_CONNECTIONS: 6,
+    // Upload uses request-response (connections get reused), so more
+    // workers queue efficiently against the 6-slot pool.
+    UPLOAD_CONNECTIONS: 10,
     DOWNLOAD_DURATION: 10, // seconds
-    UPLOAD_SIZE_PER_CONNECTION: 10, // MB
-    PING_COUNT: 5,
+    UPLOAD_DURATION: 10,   // seconds
+    PING_COUNT: 8,         // more samples for accurate median/jitter
     MAX_HISTORY: 10
 };
 
@@ -121,47 +127,83 @@ async function testPing() {
     document.querySelector('.metric-card.ping')?.classList.add('testing');
     setGaugeDisplay('PING', null, 'ms', null);
 
+    // ── Warmup: buka koneksi TCP tanpa dihitung ke hasil ─────────────────────
+    // Paket warmup memastikan TCP handshake selesai sebelum pengukuran,
+    // sehingga RTT yang diukur adalah latency murni, bukan setup overhead.
+    try {
+        await fetch(`${currentServer}/ping`, {
+            method: 'POST',
+            body: new Uint8Array(64),   // 64-byte payload (setara ICMP echo)
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/octet-stream' }
+        });
+    } catch (e) { /* abaikan error warmup */ }
+
+    // ── Paket ping: 64 byte tetap (mirip ICMP echo request) ──────────────────
+    // Menggunakan POST agar server membaca paket secara penuh sebelum membalas.
+    // Ini mengukur RTT bidirectional (client→server→client) yang sesungguhnya.
+    const pingPacket = new Uint8Array(64);
+    // Isi dengan pola tetap (bukan random) agar tidak ada overhead CSPRNG
+    for (let b = 0; b < 64; b++) pingPacket[b] = b & 0xff;
+
     const pingTimes = [];
-    
+
     for (let i = 0; i < CONFIG.PING_COUNT; i++) {
         const controller = new AbortController();
         abortControllers.push(controller);
 
+        updateProgress(10 + i * 2, `Mengirim paket ${i + 1}/${CONFIG.PING_COUNT}...`);
+
         const startTime = performance.now();
-        
+
         try {
-            await fetch(`${currentServer}/ping`, {
-                method: 'GET',
-                cache: 'no-cache',
-                signal: controller.signal
+            // Kirim paket kecil → server baca penuh → server balas JSON
+            // Waktu diukur dari byte pertama dikirim sampai byte terakhir diterima
+            const resp = await fetch(`${currentServer}/ping`, {
+                method: 'POST',
+                body: pingPacket,
+                cache: 'no-store',
+                signal: controller.signal,
+                headers: { 'Content-Type': 'application/octet-stream' }
             });
-            
+            await resp.json(); // tunggu body balasan tiba sepenuhnya
+
             const endTime = performance.now();
-            const latency = Math.round(endTime - startTime);
+            const latency = parseFloat((endTime - startTime).toFixed(1));
             pingTimes.push(latency);
-            setGaugeDisplay('PING', latency, 'ms', '#a78bfa');
+
+            updateProgress(
+                10 + (i + 1) * 2,
+                `Paket ${i + 1}/${CONFIG.PING_COUNT} → balasan diterima: ${Math.round(latency)} ms`
+            );
+            setGaugeDisplay('PING', Math.round(latency), 'ms', '#a78bfa');
             await new Promise(r => setTimeout(r, 300));
-            
+
         } catch (error) {
             if (error.name === 'AbortError') throw error;
             console.error('Ping error:', error);
         }
-
-        updateProgress(10 + (i + 1) * 3, `Ping ${i + 1}/${CONFIG.PING_COUNT}...`);
     }
 
-    const avgPing = pingTimes.length > 0
-        ? Math.round(pingTimes.reduce((a, b) => a + b, 0) / pingTimes.length)
-        : 0;
-    const jitter = pingTimes.length > 1
-        ? Math.round(Math.max(...pingTimes) - Math.min(...pingTimes))
+    // Median ping (more robust than average against outliers)
+    const sorted = [...pingTimes].sort((a, b) => a - b);
+    const medianPing = sorted.length > 0
+        ? Math.round(sorted[Math.floor(sorted.length / 2)])
         : 0;
 
-    pingResult.textContent = avgPing;
+    // Jitter = mean of absolute consecutive differences (matches Ookla method)
+    const jitter = pingTimes.length > 1
+        ? Math.round(
+            pingTimes.slice(1).reduce((sum, t, i) => sum + Math.abs(t - pingTimes[i]), 0)
+            / (pingTimes.length - 1)
+          )
+        : 0;
+
+    pingResult.textContent = medianPing;
     if (jitterResult) jitterResult.textContent = jitter;
 
     // Show final ping result for 1.5s
-    setGaugeDisplay('PING', avgPing, 'ms', '#a78bfa');
+    setGaugeDisplay('PING', medianPing, 'ms', '#a78bfa');
     await new Promise(r => setTimeout(r, 1500));
 
     // Show jitter for 1.5s
@@ -176,15 +218,48 @@ async function testDownload() {
     document.querySelector('.metric-card.download')?.classList.add('testing');
     setGaugeDisplay('UNDUH', null, 'Mbps', '#22d3ee');
 
+    // ── Warmup phase ─────────────────────────────────────────────────────────
+    // TCP slow-start ramps up slowly; discard the first 2 seconds so that
+    // measured bytes reflect steady-state throughput, not ramp-up.
+    const WARMUP_MS = 2000;
+    const warmupControllers = [];
+    const warmupEnd = performance.now() + WARMUP_MS;
+    updateProgress(26, 'Warmup Download...');
+
+    const warmupPromises = Array.from({ length: CONFIG.DOWNLOAD_CONNECTIONS }, () => {
+        const wc = new AbortController();
+        warmupControllers.push(wc);
+        return (async () => {
+            try {
+                const resp = await fetch(`${currentServer}/download?duration=3`, {
+                    method: 'GET', cache: 'no-store', signal: wc.signal
+                });
+                if (!resp.body) return;
+                const reader = resp.body.getReader();
+                while (performance.now() < warmupEnd) {
+                    const { done } = await reader.read();
+                    if (done) break;
+                }
+                reader.cancel();
+            } catch (e) { /* warmup errors ignored */ }
+        })();
+    });
+    await Promise.race([
+        Promise.all(warmupPromises),
+        new Promise(r => setTimeout(r, WARMUP_MS + 200))
+    ]);
+    warmupControllers.forEach(c => c.abort());
+
+    // ── Measurement phase ─────────────────────────────────────────────────────
     const startTime = performance.now();
     const endTime = startTime + (CONFIG.DOWNLOAD_DURATION * 1000);
     let totalBytes = 0;
     let lastUpdate = startTime;
 
-    // Create multiple parallel download streams
+    // Use DOWNLOAD_CONNECTIONS (6) — matches HTTP/1.1 per-origin browser limit
     const downloadPromises = [];
     
-    for (let i = 0; i < CONFIG.PARALLEL_CONNECTIONS; i++) {
+    for (let i = 0; i < CONFIG.DOWNLOAD_CONNECTIONS; i++) {
         const controller = new AbortController();
         abortControllers.push(controller);
 
@@ -193,7 +268,7 @@ async function testDownload() {
                 try {
                     const response = await fetch(`${currentServer}/download?duration=${CONFIG.DOWNLOAD_DURATION}`, {
                         method: 'GET',
-                        cache: 'no-cache',
+                        cache: 'no-store',
                         signal: controller.signal
                     });
 
@@ -254,21 +329,26 @@ async function testUpload() {
     document.querySelector('.metric-card.upload')?.classList.add('testing');
     setGaugeDisplay('UNGGAH', null, 'Mbps', '#fbbf24');
 
-    const chunkSize = 64 * 1024; // 64KB per chunk
+    // ── Upload data buffer ────────────────────────────────────────────────────
+    // 4MB chunks: amortizes per-request HTTP overhead (was 64KB = bottleneck).
+    // Bandwidth-Delay Product for 1Gbps@8ms = 1MB, so 4MB covers 4× BDP.
+    // Math.random() loop for 4MB would take ~2s — use WebCrypto instead.
+    // crypto.getRandomValues is limited to 65536 bytes per call, loop it.
+    const chunkSize = 4 * 1024 * 1024; // 4MB
     const uploadData = new Uint8Array(chunkSize);
-    for (let i = 0; i < uploadData.length; i++) {
-        uploadData[i] = Math.floor(Math.random() * 256);
+    for (let off = 0; off < uploadData.length; off += 65536) {
+        crypto.getRandomValues(uploadData.subarray(off, Math.min(off + 65536, uploadData.length)));
     }
 
-    // Time-based limit (same as download) — prevents infinite loop on mobile
+    // Time-based limit — prevents infinite loop on mobile
     const startTime = performance.now();
-    const endTime = startTime + (CONFIG.DOWNLOAD_DURATION * 1000);
+    const endTime = startTime + (CONFIG.UPLOAD_DURATION * 1000);
     let totalBytes = 0;
     let lastUpdate = startTime;
 
     const uploadPromises = [];
 
-    for (let i = 0; i < CONFIG.PARALLEL_CONNECTIONS; i++) {
+    for (let i = 0; i < CONFIG.UPLOAD_CONNECTIONS; i++) {
         const controller = new AbortController();
         abortControllers.push(controller);
 
@@ -278,7 +358,7 @@ async function testUpload() {
                     const response = await fetch(`${currentServer}/upload`, {
                         method: 'POST',
                         body: uploadData,
-                        cache: 'no-cache',
+                        cache: 'no-store',
                         signal: controller.signal,
                         headers: { 'Content-Type': 'application/octet-stream' }
                     });
@@ -295,7 +375,7 @@ async function testUpload() {
                         setGaugeSpeed(speedMbps, 'upload');
                         setGaugeDisplay('UNGGAH', speedMbps.toFixed(1), 'Mbps', '#fbbf24');
 
-                        const progress = 60 + ((now - startTime) / (CONFIG.DOWNLOAD_DURATION * 1000)) * 35;
+                        const progress = 60 + ((now - startTime) / (CONFIG.UPLOAD_DURATION * 1000)) * 35;
                         updateProgress(Math.min(95, progress), `Upload: ${speedMbps.toFixed(2)} Mbps`);
 
                         lastUpdate = now;
@@ -456,14 +536,24 @@ async function loadHistory() {
                 historyContainer.innerHTML = '<p class="no-history">Belum ada riwayat test</p>';
                 return;
             }
+            // Get current session for username display
+            const session = (typeof getCurrentSession === 'function') ? getCurrentSession() : null;
+            const displayUser = session ? (session.fullname || session.username) : null;
             historyContainer.innerHTML = rows.map(item => {
                 const srvName = resolveServerName(item.server, item.serverName);
                 const ts      = item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+                const userBadge = displayUser
+                    ? `<span class="shi-hdr-lbl" style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;color:var(--accent);font-size:0.6rem">
+                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                           ${displayUser}
+                       </span>`
+                    : '';
                 return `<div class="shi">
                     <div class="shi-header">
                         <div class="shi-hdr-server">
                             <span class="shi-hdr-lbl">Server</span>
                             <span class="shi-hdr-name">${srvName}</span>
+                            ${userBadge}
                         </div>
                         <div class="shi-hdr-time">
                             <span class="shi-hdr-lbl">Tanggal / Waktu</span>

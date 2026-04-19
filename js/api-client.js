@@ -63,3 +63,7 @@ async function apiToggleEndpoint(id)        { return apiFetch(`/api/endpoints/${
 async function apiGetHistory()              { return apiFetch('/api/history'); }
 async function apiSaveHistory(d)            { return apiFetch('/api/history', { method: 'POST', body: JSON.stringify(d) }); }
 async function apiClearHistory()            { return apiFetch('/api/history', { method: 'DELETE' }); }
+
+// ── Site Settings ─────────────────────────────────────────────────
+async function apiGetSiteSettings()         { return apiFetch('/api/site-settings'); }
+async function apiSaveSiteSettings(d)       { return apiFetch('/api/site-settings', { method: 'PUT', body: JSON.stringify(d) }); }

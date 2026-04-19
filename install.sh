@@ -2,6 +2,7 @@
 # ================================================================
 #  WebSpeedTest — Auto Installer
 #  Repo   : https://github.com/PutuTobing/WebSpeedTest
+#  Version: 1.1.0
 #  Supports: Ubuntu 20.04+, Debian 10+, Linux Mint 20+
 # ================================================================
 
@@ -62,7 +63,7 @@ print_banner() {
     echo "  ║║║║╣ ╠╩╗    ╚═╗╠═╝║╣ ║╣  ║  ║ ║╣ ╚═╗ ║ "
     echo "  ╚╩╝╚═╝╚═╝    ╚═╝╩  ╚═╝╚═╝ ╩  ╩ ╚═╝╚═╝ ╩ "
     echo -e "${NC}"
-    echo -e "  ${BOLD}Auto Installer v1.0 — SKY TECH${NC}"
+    echo -e "  ${BOLD}Auto Installer v1.1.0 — SKY TECH${NC}"
     echo -e "  ${CYAN}https://github.com/PutuTobing/WebSpeedTest${NC}"
     echo -e "  ──────────────────────────────────────────────"
     echo ""
@@ -297,6 +298,13 @@ CREATE TABLE IF NOT EXISTS speedtest_history (
     upload_mbps   FLOAT DEFAULT 0,
     tested_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS site_settings (
+    id            INT NOT NULL DEFAULT 1,
+    settings_json TEXT NOT NULL,
+    updated_at    TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOSQL
     success "Tabel database berhasil dibuat"
 }
@@ -326,6 +334,9 @@ create_env() {
     local server_ip
     server_ip=$(hostname -I | awk '{print $1}')
 
+    local backup_key
+    backup_key=$(openssl rand -hex 32)
+
     cat > "${INSTALL_DIR}/api/.env" <<EOF
 # WebSpeedTest — Environment Configuration
 # Generated: $(date '+%Y-%m-%d %H:%M:%S')
@@ -341,6 +352,9 @@ DEFAULT_ADMIN_PASS=${ADMIN_PASS}
 
 API_PORT=${API_PORT}
 FRONTEND_URL=http://${server_ip}:${FRONTEND_PORT}
+
+# AES-256-CBC key untuk enkripsi file backup database (auto-generated)
+BACKUP_KEY=${backup_key}
 EOF
     chmod 600 "${INSTALL_DIR}/api/.env"
     success ".env berhasil dibuat (mode 600 — hanya root yang bisa baca)"

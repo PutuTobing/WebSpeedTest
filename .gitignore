@@ -1,18 +1,13 @@
-# Dependencies — jangan di-push
+# Dependencies
 api/node_modules/
 
-# Environment variables — RAHASIA, jangan di-push
+# Environment variables — JANGAN pernah di-push
 api/.env
 
 # Logs
 api/logs/
 *.log
 
-# OS & editor files
+# OS files
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
-
-# npm debug
-npm-debug.log*

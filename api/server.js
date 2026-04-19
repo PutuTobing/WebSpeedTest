@@ -14,11 +14,13 @@ app.use(cors({
 app.use(express.json({ limit: '2mb' }));
 
 // Routes
-app.use('/api/auth',      require('./routes/auth'));
-app.use('/api/users',     require('./routes/users'));
-app.use('/api/servers',   require('./routes/servers'));
-app.use('/api/endpoints', require('./routes/endpoints'));
-app.use('/api/history',   require('./routes/history'));
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/users',         require('./routes/users'));
+app.use('/api/servers',       require('./routes/servers'));
+app.use('/api/endpoints',     require('./routes/endpoints'));
+app.use('/api/history',       require('./routes/history'));
+app.use('/api/site-settings', require('./routes/site-settings'));
+app.use('/api/backup',       require('./routes/backup'));
 
 // Root + health check
 app.get('/', (_req, res) => res.json({ name: 'SpeedTest API', version: '1.0.0', status: 'running', docs: '/api/health' }));
