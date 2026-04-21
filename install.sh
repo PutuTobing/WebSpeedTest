@@ -219,10 +219,7 @@ setup_database() {
     success "MySQL/MariaDB berjalan"
 
     info "Membuat database '${DB_NAME}' dan user '${DB_USER}'..."
-    mysql -u root 2>>"$LOG" <<EOF || {
-        error "Gagal setup database. Pastikan MySQL bisa diakses dengan: mysql -u root"
-        exit 1
-    }
+    mysql -u root 2>>"$LOG" <<EOF || { error "Gagal setup database. Pastikan MySQL bisa diakses dengan: mysql -u root"; exit 1; }
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -235,10 +232,7 @@ EOF
     success "Database dan user berhasil dibuat"
 
     info "Membuat tabel database..."
-    mysql -u root "${DB_NAME}" 2>>"$LOG" <<'EOSQL' || {
-        error "Gagal membuat tabel. Lihat log: $LOG"
-        exit 1
-    }
+    mysql -u root "${DB_NAME}" 2>>"$LOG" <<'EOSQL' || { error "Gagal membuat tabel. Lihat log: $LOG"; exit 1; }
 CREATE TABLE IF NOT EXISTS users (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     username      VARCHAR(50)  NOT NULL UNIQUE,
