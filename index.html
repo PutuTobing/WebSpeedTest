@@ -638,7 +638,7 @@
             } catch {}
             // Fallback: IP-based geolocation
             try {
-                const d = await (await fetch('https://ip-api.com/json/?fields=status,lat,lon')).json();
+                const d = await (await fetch('http://ip-api.com/json/?fields=status,lat,lon')).json();
                 if (d.status === 'success') { _userCoords = { lat: d.lat, lon: d.lon }; return _userCoords; }
             } catch {}
             return null;
@@ -651,7 +651,7 @@
                 // Get server geo (cached)
                 if (!_svrGeoCache.has(host)) {
                     try {
-                        const d = await (await fetch(`https://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
+                        const d = await (await fetch(`http://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
                         _svrGeoCache.set(host, d.status === 'success' ? { lat: d.lat, lon: d.lon } : null);
                     } catch { _svrGeoCache.set(host, null); }
                 }

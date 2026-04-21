@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const PRIMARY_URL   = 'https://ip-api.com/json/?fields=status,query,isp,org,as,city,regionName,country,countryCode';
+    const PRIMARY_URL   = 'http://ip-api.com/json/?fields=status,query,isp,org,as,city,regionName,country,countryCode';
     const FALLBACK_URL  = 'https://ipinfo.io/json';
     const TIMEOUT_MS    = 6000;
 
