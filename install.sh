@@ -152,6 +152,28 @@ prompt_config() {
 # ── Install system packages ───────────────────────────────────────
 install_packages() {
     step "Update & install paket sistem"
+
+    # ── Tunggu dpkg/apt lock bebas (unattended-upgrades, dll) ────────
+    local lock_wait=0
+    local lock_max=180
+    while fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock \
+                /var/lib/dpkg/lock /var/cache/apt/archives/lock \
+                >/dev/null 2>&1; do
+        if [[ $lock_wait -eq 0 ]]; then
+            info "Menunggu proses apt/dpkg lain selesai (unattended-upgrades?)..."
+        fi
+        if [[ $lock_wait -ge $lock_max ]]; then
+            warn "Timeout menunggu lock. Mencoba paksa kill unattended-upgrades..."
+            systemctl stop unattended-upgrades >> "$LOG" 2>&1 || true
+            killall apt apt-get unattended-upgrade 2>/dev/null || true
+            sleep 2
+            break
+        fi
+        sleep 3
+        lock_wait=$((lock_wait + 3))
+    done
+    [[ $lock_wait -gt 0 ]] && success "Lock dpkg bebas, melanjutkan..."
+
     info "Menjalankan apt-get update..."
     apt-get update -qq >> "$LOG" 2>&1 || {
         error "apt-get update gagal. Cek koneksi internet atau repository."
