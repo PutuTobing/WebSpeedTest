@@ -328,6 +328,17 @@ EOSQL
 # ── Deploy files ──────────────────────────────────────────────────
 deploy_files() {
     step "Deploy file aplikasi"
+    # Validasi file kritis tersedia sebelum deploy
+    if [[ ! -f "${SCRIPT_DIR}/api/server.js" ]]; then
+        error "File api/server.js tidak ditemukan di ${SCRIPT_DIR}/api/"
+        error "Pastikan install.sh dijalankan dari direktori project WebSpeedTest."
+        exit 1
+    fi
+    if [[ ! -f "${SCRIPT_DIR}/index.html" ]]; then
+        error "File index.html tidak ditemukan di ${SCRIPT_DIR}/"
+        error "Pastikan install.sh dijalankan dari direktori project WebSpeedTest."
+        exit 1
+    fi
     info "Menyalin file ke ${INSTALL_DIR}..."
 
     mkdir -p "${INSTALL_DIR}"
@@ -489,13 +500,40 @@ EOF
     success "webspeedtest-web aktif, enabled (auto-start saat boot)"
 }
 
+# ── Install phpMyAdmin ────────────────────────────────────────────
+install_phpmyadmin() {
+    step "Install phpMyAdmin — manajemen database via browser"
+
+    info "Menginstall Apache2, PHP, dan phpMyAdmin..."
+    echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false'          | debconf-set-selections
+    echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
+
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+        apache2 php php-mysql libapache2-mod-php phpmyadmin >> "$LOG" 2>&1 || {
+        warn "phpMyAdmin gagal diinstall. Bisa diinstall manual dengan:"
+        warn "  sudo apt-get install -y apache2 php php-mysql libapache2-mod-php phpmyadmin"
+        return
+    }
+
+    a2enconf phpmyadmin >> "$LOG" 2>&1 || true
+    systemctl enable apache2  >> "$LOG" 2>&1
+    systemctl restart apache2 >> "$LOG" 2>&1
+
+    local server_ip
+    server_ip=$(hostname -I | awk '{print $1}')
+    success "phpMyAdmin berhasil diinstall"
+    success "Akses: http://${server_ip}/phpmyadmin/"
+    info    "Login: gunakan user '${DB_USER}' atau 'root' dengan password yang sudah di-set"
+}
+
 # ── Firewall ──────────────────────────────────────────────────────
 setup_firewall() {
     if command -v ufw &>/dev/null && ufw status 2>/dev/null | grep -q "Status: active"; then
         step "Konfigurasi firewall (ufw)"
         ufw allow "${FRONTEND_PORT}/tcp" comment "WebSpeedTest Frontend" >> "$LOG" 2>&1
         ufw allow "${API_PORT}/tcp"      comment "WebSpeedTest API"      >> "$LOG" 2>&1
-        success "Firewall: port ${FRONTEND_PORT} dan ${API_PORT} dibuka"
+        ufw allow "80/tcp"               comment "Apache2 phpMyAdmin"    >> "$LOG" 2>&1
+        success "Firewall: port ${FRONTEND_PORT}, ${API_PORT}, dan 80 dibuka"
     fi
 }
 
@@ -545,6 +583,7 @@ final_check() {
     echo -e "  ┌────────────────────────────────────────────────────────┐"
     echo -e "  │  Frontend   : http://${server_ip}:${FRONTEND_PORT}"
     echo -e "  │  API Health : http://${server_ip}:${API_PORT}/api/health"
+    echo -e "  │  phpMyAdmin : http://${server_ip}/phpmyadmin/"
     echo -e "  │  Login      : admin / (password yang Anda set tadi)"
     echo -e "  └────────────────────────────────────────────────────────┘"
     echo ""
@@ -594,6 +633,7 @@ main() {
     prompt_config
     install_packages
     install_nodejs
+    install_phpmyadmin
     setup_database
     deploy_files
     create_env
