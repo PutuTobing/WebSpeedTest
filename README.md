@@ -60,7 +60,7 @@ Modern, lightweight, and feature-rich internet speed test application with admin
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/speedtest-skytech.git
+git clone https://github.com/PutuTobing/WebSpeedTest.git
 cd speedtest-skytech
 ```
 
