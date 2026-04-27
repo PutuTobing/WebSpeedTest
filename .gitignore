@@ -11,3 +11,4 @@ api/logs/
 # OS files
 .DS_Store
 Thumbs.db
+.backup_old/

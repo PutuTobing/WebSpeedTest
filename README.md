@@ -1,229 +1,277 @@
-# WebSpeedTest — SKY TECH
+# 🚀 SpeedTest - SKY TECH
 
-Sistem monitoring kecepatan internet berbasis web dengan dashboard admin, manajemen server, dan riwayat pengujian.
+Modern, lightweight, and feature-rich internet speed test application with admin dashboard, built with vanilla JavaScript and Node.js.
 
----
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
+![MySQL](https://img.shields.io/badge/MySQL-%3E%3D8.0-blue.svg)
 
-## Fitur
+## ✨ Features
 
-- Dashboard monitoring real-time kecepatan internet
-- Manajemen server & endpoint (tambah, edit, hapus, approve)
-- Riwayat hasil speedtest per pengguna
-- Sistem autentikasi JWT (admin & user)
-- Auto-check status server tiap 1 jam
-- Tampilan responsif dengan dark/light mode
-- 2 systemd service (API + Frontend) — auto-start saat boot, auto-restart jika crash
+### 🎯 Speed Test
+- **Real-time testing**: Ping, Jitter, Download, and Upload speed measurement
+- **Server selection**: Choose from multiple test servers
+- **Smart timeout detection**: Automatic error handling for unreachable servers
+- **Test history**: Track your speed test results over time
+- **Responsive gauge display**: Visual feedback during tests
+- **Client information**: Display IP, ISP, AS Number, and location
 
----
+### 🛡️ Admin Dashboard
+- **User management**: Create, edit, and manage user accounts
+- **Server approval**: Review and approve/reject server registrations
+- **Endpoint management**: Configure test endpoints
+- **Site customization**: 
+  - Dynamic site title configuration
+  - Logo and branding customization
+  - Contact information settings
+  - Email & WhatsApp message templates
+- **Backup & Restore**: AES-256 encrypted database backup/restore
+- **Authentication**: JWT-based secure authentication
 
-## Persyaratan
+### 🎨 UI/UX
+- **Dark/Light theme**: Toggle between themes
+- **Fully responsive**: Mobile, tablet, and desktop support
+- **Modern CSS**: Glassmorphism design with smooth animations
+- **Accessibility**: Semantic HTML and ARIA labels
 
-| Komponen | Versi Minimum |
-|----------|--------------|
-| OS       | Ubuntu 20.04 / Debian 10 / Linux Mint 20 |
-| RAM      | 6 Gb |
-| Disk     | 30 Gb |
-| Node.js  | 18 (diinstall otomatis) |
-| MySQL    | 8.0 / MariaDB 10.5 (diinstall otomatis) |
-| Python3  | 3.8+ (diinstall otomatis) |
+## 🛠️ Tech Stack
 
----
+### Frontend
+- **Vanilla JavaScript** - No frameworks, pure performance
+- **HTML5 & CSS3** - Modern web standards
+- **Modular architecture** - Organized code structure
 
-## Instalasi Cepat
+### Backend
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **MySQL** - Database
+- **JWT** - Authentication
+- **bcrypt** - Password hashing
+- **AES-256-CBC** - Backup encryption
 
+## 📦 Installation
+
+### Prerequisites
 ```bash
-# 1. Masuk sebagai root
-sudo su
-
-# 2. Clone repository
-git clone https://github.com/PutuTobing/WebSpeedTest.git
-
-# 3. Masuk ke folder
-cd WebSpeedTest
-
-# 4. Beri izin eksekusi
-chmod +x install.sh
-
-# 5. Jalankan installer
-bash install.sh
+- Node.js >= 18.0.0
+- MySQL >= 8.0
+- npm or yarn
 ```
 
-Installer akan memandu Anda mengisi:
-- Port frontend (default: **8000**)
-- Port API (default: **3001**)
-- Password database
-- Password admin aplikasi
-
-Semua konfigurasi lain (JWT secret, struktur database) dibuat **otomatis**.
-
----
-
-## Proses Instalasi
-
-```
-━━ Memeriksa sistem operasi ━━
-━━ Update & install paket sistem ━━
-━━ Instalasi Node.js ━━
-━━ Setup database MySQL ━━
-━━ Deploy file aplikasi ━━
-━━ Membuat konfigurasi .env ━━
-━━ Install Node.js dependencies ━━
-━━ Patch konfigurasi frontend ━━
-━━ Setup systemd service — API Backend ━━
-━━ Setup systemd service — Frontend Web ━━
-━━ Konfigurasi firewall (ufw) ━━
-━━ Verifikasi instalasi ━━
-```
-
----
-
-## Akses Setelah Instalasi
-
-| Layanan   | URL                                   |
-|-----------|---------------------------------------|
-| Frontend  | `http://<IP-SERVER>:8000`            |
-| API       | `http://<IP-SERVER>:3001`            |
-| Health    | `http://<IP-SERVER>:3001/api/health` |
-
-Login default:
-- **Username**: `admin`
-- **Password**: password yang Anda set saat instalasi
-
----
-
-## Manajemen Service
-
-Aplikasi berjalan sebagai 2 systemd service yang **otomatis aktif saat server boot** dan **otomatis restart jika crash**.
-
-### API Backend (Node.js — port 3001)
-
+### 1. Clone the repository
 ```bash
-systemctl start   webspeedtest-api   # hidupkan
-systemctl stop    webspeedtest-api   # matikan
-systemctl restart webspeedtest-api   # restart
-systemctl enable  webspeedtest-api   # aktifkan auto-start saat boot
-systemctl disable webspeedtest-api   # nonaktifkan auto-start
-systemctl status  webspeedtest-api   # cek status
+git clone https://github.com/your-username/speedtest-skytech.git
+cd speedtest-skytech
 ```
 
-### Frontend Web (Python3 http.server — port 8000)
-
+### 2. Backend setup
 ```bash
-systemctl start   webspeedtest-web   # hidupkan
-systemctl stop    webspeedtest-web   # matikan
-systemctl restart webspeedtest-web   # restart
-systemctl enable  webspeedtest-web   # aktifkan auto-start saat boot
-systemctl disable webspeedtest-web   # nonaktifkan auto-start
-systemctl status  webspeedtest-web   # cek status
+cd api
+
+# Install dependencies
+npm install
+
+# Create .env file (copy from example)
+cp .env.example .env
+
+# Edit .env with your database credentials
+nano .env
+
+# Run database migrations
+# The tables will be created automatically on first run
 ```
 
-### Log Realtime
-
+### 3. Frontend setup
 ```bash
-journalctl -u webspeedtest-api -f   # log API
-journalctl -u webspeedtest-web -f   # log Frontend
+# Navigate to frontend directory
+cd ..
+
+# Update API_URL in assets/js/shared/config.js if needed
 ```
 
----
+### 4. Start services
 
-## Struktur File
+**Development mode:**
+```bash
+# Terminal 1 - Backend API
+cd api
+npm start  # Runs on port 3001
 
-```
-WebSpeedTest/
-├── install.sh          # Auto installer
-├── index.html          # Halaman utama / speedtest
-├── login.html          # Halaman login
-├── dashboard.html      # Dashboard user
-├── admin.html          # Panel admin
-├── css/
-│   └── style.css       # Stylesheet utama
-├── js/
-│   ├── config.js       # Konfigurasi URL API
-│   ├── admin.js        # Logika panel admin
-│   ├── auth.js         # Autentikasi & session
-│   ├── api-client.js   # HTTP client ke API
-│   ├── dashboard.js    # Dashboard logic
-│   ├── login.js        # Login form logic
-│   ├── speedtest.js    # Speedtest engine
-│   ├── storage.js      # Local storage helper
-│   ├── theme.js        # Dark/light mode
-│   └── client-info.js  # Info client (IP, ISP)
-└── api/
-    ├── server.js       # Express API server
-    ├── database.js     # Koneksi MySQL
-    ├── package.json    # Dependensi Node.js
-    ├── .env.example    # Contoh konfigurasi
-    ├── middleware/
-    │   └── auth.js     # JWT middleware
-    └── routes/
-        ├── auth.js     # Route login/register
-        ├── servers.js  # Route manajemen server
-        ├── endpoints.js # Route endpoint
-        ├── history.js  # Route riwayat
-        └── users.js    # Route manajemen user
+# Terminal 2 - Frontend
+cd ..
+python3 -m http.server 8000  # Or use any static server
 ```
 
----
+**Production mode:**
+```bash
+# Using PM2
+pm2 start api/server.js --name speedtest-api
 
-## Konfigurasi Manual (.env)
+# Or using systemd (see INSTALLATION.md for details)
+sudo systemctl start speedtest-api
+```
 
-File konfigurasi berada di `/opt/webspeedtest/api/.env` (dibuat otomatis saat instalasi).
+## 🔧 Configuration
 
+### Environment Variables (.env)
 ```env
+# Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=speedtest_user
-DB_PASS=YOUR_DB_PASSWORD
+DB_PASS=your_password
 DB_NAME=speedtest_db
 
-JWT_SECRET=YOUR_64_CHAR_SECRET
-DEFAULT_ADMIN_PASS=YOUR_ADMIN_PASSWORD
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
 
-API_PORT=3001
-FRONTEND_URL=http://YOUR_IP:8000
+# Backup Encryption (32-byte hex key)
+BACKUP_KEY=generate-with-openssl-rand-32-hex
+
+# Server
+PORT=3001
+NODE_ENV=production
 ```
 
-Setelah mengubah `.env`, restart API:
+### Generate Encryption Key
 ```bash
-systemctl restart webspeedtest-api
+# Generate BACKUP_KEY
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+## 📖 Usage
+
+### User Flow
+1. Visit `http://localhost:8000`
+2. Select a server from the dropdown
+3. Click "MULAI" to start speed test
+4. View results and test history
+
+### Admin Flow
+1. Visit `http://localhost:8000/login.html`
+2. Login with admin credentials
+3. Access admin dashboard
+4. Manage users, servers, and settings
+5. Download/restore database backups
+
+### Default Admin Account
+```
+Username: admin
+Password: admin123
+⚠️ Change this immediately after first login!
+```
+
+## 🚀 Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions including:
+- Nginx reverse proxy setup
+- SSL/TLS configuration
+- PM2 process management
+- Systemd service configuration
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow existing code style
+- Add comments for complex logic
+- Test your changes thoroughly
+- Update documentation if needed
+
+## 📝 API Documentation
+
+### Authentication Endpoints
+```
+POST /api/auth/login       - User login
+POST /api/auth/check       - Verify JWT token
+POST /api/auth/logout      - User logout
+```
+
+### User Management (Admin only)
+```
+GET    /api/users          - List all users
+POST   /api/users          - Create new user
+PUT    /api/users/:id      - Update user
+DELETE /api/users/:id      - Delete user
+```
+
+### Server Management
+```
+GET    /api/servers        - List all servers
+POST   /api/servers        - Register new server
+PUT    /api/servers/:id    - Update server status
+DELETE /api/servers/:id    - Delete server
+```
+
+### Speed Test Endpoints
+```
+POST   /ping               - Ping test endpoint
+GET    /download           - Download test endpoint
+POST   /upload             - Upload test endpoint
+```
+
+### Backup & Restore (Admin only)
+```
+GET    /api/backup         - Download encrypted backup
+POST   /api/backup         - Restore from backup
+```
+
+## 🔒 Security Features
+
+- **JWT Authentication** - Secure token-based auth
+- **Password Hashing** - bcrypt with salt rounds
+- **SQL Injection Protection** - Parameterized queries
+- **XSS Prevention** - Input sanitization
+- **CORS Configuration** - Controlled cross-origin requests
+- **Encrypted Backups** - AES-256-CBC encryption
+- **Admin-only Routes** - Role-based access control
+
+## 🐛 Known Issues & Roadmap
+
+### Known Issues
+- None currently reported
+
+### Roadmap
+- [ ] Multi-language support (i18n)
+- [ ] Export test history to CSV/PDF
+- [ ] Speed test scheduling
+- [ ] Email notifications
+- [ ] Mobile app (React Native)
+- [ ] Docker containerization
+- [ ] Redis caching layer
+- [ ] WebSocket real-time updates
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**SKY TECH - PT. SKY Base Technologhy Digital**
+- Website: [https://btd.co.id](https://btd.co.id)
+- Email: office@btd.co.id
+- Phone: +62 822-1783-5764
+
+## 🙏 Acknowledgments
+
+- Inspired by Ookla Speedtest
+- Built with love for the community
+- Thanks to all contributors
+
+## 📞 Support
+
+For issues, questions, or contributions:
+- Open an issue on GitHub
+- Email: office@btd.co.id
+- WhatsApp: +62 822-1783-5764
 
 ---
 
-## Troubleshooting
-
-### API tidak bisa diakses
-```bash
-# Cek status service
-systemctl status webspeedtest-api
-
-# Lihat log error
-journalctl -u webspeedtest-api -n 50
-
-# Cek port sudah listen
-ss -tlnp | grep 3001
-```
-
-### Frontend tidak bisa diakses
-```bash
-systemctl status webspeedtest-web
-journalctl -u webspeedtest-web -n 30
-ss -tlnp | grep 8000
-```
-
-### Database error
-```bash
-systemctl status mysql
-mysql -u speedtest_user -p speedtest_db
-```
-
-### Lihat log instalasi
-```bash
-cat /var/log/webspeedtest-install.log
-```
-
----
-
-## Lisensi
-
-© 2026 SKY TECH — Putu Tobing
+**⭐ If you find this project useful, please give it a star on GitHub!**

@@ -8,7 +8,11 @@
     <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
     <!-- Animated Background -->
@@ -23,7 +27,8 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="https://btd.co.id/">
-                    <img src="https://btd.co.id/LOGO%20SKY.png" alt="SKY TECH Logo" class="logo-img">
+                    <img src="https://pututobing.btd.co.id/AS142264.png" alt="SKY TECH Logo" class="logo-img">
+                    <span class="logo-brand-name"><span class="lbn-main">SKY TECH</span><span class="lbn-sub">PT. SKY Base Technologhy Digital</span></span>
                 </a>
             </div>
             
@@ -60,6 +65,9 @@
         </div>
     </nav>
 
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <div class="page-scroll" style="padding: 0;">
     <div class="dashboard-container">
         <div class="dashboard-sidebar">
             <h3>📊 Dashboard Menu</h3>
@@ -224,12 +232,14 @@
             </div>
         </div>
     </div>
+</div><!-- end .page-scroll -->
 
-    <script src="js/config.js?v=3"></script>
-    <script src="js/api-client.js?v=3"></script>
-    <script src="js/theme.js?v=3"></script>
-    <script src="js/auth.js?v=4"></script>
-    <script src="js/storage.js?v=3"></script>
-    <script src="js/dashboard.js?v=3"></script>
+    <script src="assets/js/shared/config.js"></script>
+    <script src="assets/js/shared/api-client.js"></script>
+    <script src="assets/js/shared/theme.js"></script>
+    <script src="assets/js/shared/auth.js"></script>
+    <script src="assets/js/shared/site-config.js"></script>
+    <script src="assets/js/shared/storage.js"></script>
+    <script src="assets/js/dashboard.js"></script>
 </body>
 </html>

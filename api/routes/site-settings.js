@@ -36,6 +36,7 @@ router.get('/', async (_req, res) => {
 router.put('/', adminMiddleware, async (req, res) => {
     try {
         const allowed = [
+            'siteTitle',
             'logoUrl','brandMain','brandSub',
             'linkRegister','linkCustLogin',
             'email','phone','address','maps',

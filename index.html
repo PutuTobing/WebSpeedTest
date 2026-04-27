@@ -8,18 +8,27 @@
     <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="stylesheet" href="assets/css/variables.css?v=3">
+    <link rel="stylesheet" href="assets/css/base.css?v=3">
+    <link rel="stylesheet" href="assets/css/navbar.css?v=3">
+    <link rel="stylesheet" href="assets/css/speedtest.css?v=3">
+    <link rel="stylesheet" href="assets/css/components.css?v=3">
+    <link rel="stylesheet" href="assets/css/animations.css?v=2">
 </head>
 <body>
     <!-- Particle Canvas Background -->
     <canvas id="particle-canvas" aria-hidden="true"></canvas>
-    <!-- Navigation Header -->
-    <nav class="navbar">
+
+    <!-- Navigation Header — di luar scroll container agar dropdown tidak ter-clip -->
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="https://btd.co.id/">
                     <img src="https://pututobing.btd.co.id/AS142264.png" alt="SKY TECH Logo" class="logo-img">
-                    <span class="logo-brand-name"><span class="lbn-main">SKY TECH</span><span class="lbn-sub">PT. SKY Base Technologhy Digital</span></span>
+                    <span class="logo-brand-name">
+                        <span class="lbn-main">SKY TECH</span>
+                        <span class="lbn-sub">PT. SKY Base Technologhy Digital</span>
+                    </span>
                 </a>
             </div>
 
@@ -28,36 +37,47 @@
                     <li class="nav-item">
                         <a href="https://btd.co.id/" class="nav-link">Beranda</a>
                     </li>
-                    
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle">Daftar</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">Daftar Berlangganan SKY HOME</a></li>
-                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server&body=Saya%20ingin%20ikut%20serta%20dalam%20pengembangan%20speedtest%20server%20localhost%20pada%20ISP%20regional." class="dropdown-link">Daftar Speedtest Server</a></li>
+                        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" data-dropdown="daftar">
+                            Daftar <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <ul class="dropdown-menu" id="dd-daftar">
+                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Daftar SKY HOME</a></li>
+                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/></svg>
+                                Daftar Speedtest Server</a></li>
                         </ul>
                     </li>
-                    
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle">Login</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="login.html" class="dropdown-link">Login Speedtest Server</a></li>
-                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">Login Layanan Pelanggan</a></li>
+                        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" data-dropdown="login">
+                            Login <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <ul class="dropdown-menu" id="dd-login">
+                            <li><a href="login.html" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                Login Speedtest Server</a></li>
+                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                Login Layanan Pelanggan</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
 
             <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
-            <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
-                <span></span>
-                <span></span>
-                <span></span>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+                <span></span><span></span><span></span>
             </button>
         </div>
     </nav>
 
-    <!-- Mobile menu overlay backdrop -->
+    <!-- Mobile overlay — juga di luar scroll container -->
     <div class="nav-overlay" id="nav-overlay"></div>
+
+    <!-- Scroll wrapper — canvas & navbar berada di luar -->
+    <div class="page-scroll">
 
     <!-- Hidden elements kept for JS compatibility -->
     <div aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none">
@@ -79,13 +99,32 @@
             <h1 class="st-title">Uji Kecepatan <span class="gradient-word">Internet</span></h1>
             <p class="st-subtitle">Cek kecepatan koneksi internet kamu secara real-time</p>
 
-            <!-- Server picker -->
-            <div class="st-server-picker-wrap">
-                <svg class="ssp-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-                <select id="server-select">
+            <!-- Server picker — custom dropdown dengan search -->
+            <div class="ssp-wrap" id="ssp-wrap">
+                <!-- Select asli tersembunyi — tetap diisi JS dan dipakai speedtest.js -->
+                <select id="server-select" style="display:none" aria-hidden="true">
                     <option value="">— Memilih server terbaik… —</option>
                 </select>
-                <svg class="ssp-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+
+                <!-- Trigger button -->
+                <button class="ssp-trigger" id="ssp-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="ssp-trigger-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                    <span class="ssp-trigger-text" id="ssp-trigger-text">Memilih server terbaik…</span>
+                    <svg class="ssp-trigger-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+
+                <!-- Dropdown popup -->
+                <div class="ssp-dropdown" id="ssp-dropdown" role="listbox" aria-label="Pilih server">
+                    <!-- Search -->
+                    <div class="ssp-search-wrap">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input class="ssp-search" id="ssp-search" type="text" placeholder="Cari server…" autocomplete="off" spellcheck="false">
+                    </div>
+                    <!-- Server list -->
+                    <ul class="ssp-list" id="ssp-list">
+                        <li class="ssp-empty">Memuat server…</li>
+                    </ul>
+                </div>
             </div>
             <p class="st-auto-hint" id="st-auto-hint"></p>
 
@@ -94,21 +133,21 @@
                 <div class="st-server-card">
                     <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
                     <div class="sc-text">
-                        <span class="sc-label">Server</span>
+                        <span class="sc-label">Server Yang Dipilih</span>
                         <span class="sc-value" id="sc-server">Pilih server terlebih dahulu</span>
                     </div>
                 </div>
                 <div class="st-server-card">
                     <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     <div class="sc-text">
-                        <span class="sc-label">Lokasi</span>
+                        <span class="sc-label">Lokasi Server</span>
                         <span class="sc-value" id="sc-location">—</span>
                     </div>
                 </div>
                 <div class="st-server-card">
                     <svg class="sc-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                     <div class="sc-text">
-                        <span class="sc-label">Jarak</span>
+                        <span class="sc-label">Jarak anda ke Server</span>
                         <span class="sc-value sc-waiting" id="sc-distance">—</span>
                     </div>
                 </div>
@@ -160,6 +199,14 @@
                         <span class="gd-unit" id="gd-unit">ms</span>
                     </div>
                 </button>
+                <!-- Live speed readout overlay (shown during download/upload) -->
+                <div class="gauge-live-speed" id="gauge-live-speed">
+                    <span class="gls-num" id="gls-num">—</span>
+                    <div class="gls-bottom">
+                        <svg class="gls-phase-icon" id="gls-phase-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></svg>
+                        <span class="gls-unit">Mbps</span>
+                    </div>
+                </div>
             </div>
             <p class="gauge-phase" id="progress-text">Siap untuk Test</p>
         </section>
@@ -243,7 +290,7 @@
                 <div class="cib-item">
                     <svg class="cib-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     <div class="cib-text">
-                        <span class="cib-label">Lokasi</span>
+                        <span class="cib-label">Lokasi Anda</span>
                         <span class="cib-value" id="cib-loc"><span class="cib-loading">…</span></span>
                     </div>
                 </div>
@@ -262,6 +309,77 @@
         </div>
 
     </main>
+
+    <!-- ── Scroll Reveal — IntersectionObserver ─────────────── -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ioOptions = { threshold: 0.08, rootMargin: '0px 0px -32px 0px' };
+
+        // ─ One-way reveal: stays visible after first entry ────────
+        // (CIB items, history, footer — above the join section)
+        const oneWayGroups = [
+            { sel: '.cib-item',    stagger: true  },
+            { sel: '.st-history',  stagger: false },
+            { sel: 'footer',       stagger: false },
+        ];
+
+        // ─ Bidirectional reveal: animates IN on scroll-down ───────
+        //   and OUT on scroll-up (join / contact section only)
+        const bidirGroups = [
+            { sel: '.join-heading',            stagger: false },
+            { sel: '.join-left, .join-right',  stagger: true  },
+            { sel: '.join-social-card',        stagger: true  },
+            { sel: '.join-contact-list li',    stagger: true  },
+            { sel: '.join-btn',                stagger: true  },
+        ];
+
+        function applyReveal(sel, stagger, els) {
+            document.querySelectorAll(sel).forEach((el, i) => {
+                el.classList.add('anim-reveal');
+                if (stagger && i > 0) el.dataset.delay = Math.min(i, 5).toString();
+                els.push(el);
+            });
+        }
+
+        // ── One-way observer ──────────────────────────────────────
+        const oneWayEls = [];
+        oneWayGroups.forEach(({ sel, stagger }) => applyReveal(sel, stagger, oneWayEls));
+        if (oneWayEls.length) {
+            const ioOW = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('is-visible');
+                        ioOW.unobserve(e.target);
+                    }
+                });
+            }, ioOptions);
+            oneWayEls.forEach(el => ioOW.observe(el));
+        }
+
+        // ── Bidirectional observer (join section) ─────────────────
+        // Enter (scroll down): fade + slide up into view
+        // Exit  (scroll up) : fade + slide back down out of view
+        const bidirEls = [];
+        bidirGroups.forEach(({ sel, stagger }) => applyReveal(sel, stagger, bidirEls));
+        if (bidirEls.length) {
+            const ioBD = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        // Element entering viewport — animate in
+                        e.target.classList.remove('is-leaving');
+                        e.target.classList.add('is-visible');
+                    } else if (e.target.classList.contains('is-visible')) {
+                        // Element leaving viewport (only after it was visible)
+                        // — animate out (slide back down + fade)
+                        e.target.classList.remove('is-visible');
+                        e.target.classList.add('is-leaving');
+                    }
+                });
+            }, ioOptions);
+            bidirEls.forEach(el => ioBD.observe(el));
+        }
+    });
+    </script>
 
     <!-- ── CONTACT / JOIN SECTION ───────────────────────────── -->
     <section class="join-section">
@@ -315,12 +433,12 @@
                                 <span class="jsoc-sub">Follow</span>
                             </div>
                         </a>
-                        <!-- Facebook icon → TikTok link -->
-                        <a href="https://www.tiktok.com/@sky_techn" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-fb">
-                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                        <!-- GitHub -->
+                        <a href="https://github.com/PutuTobing" target="_blank" rel="noopener noreferrer" class="join-social-card jsoc-gh">
+                            <svg class="jsoc-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
                             <div>
-                                <span class="jsoc-name">Facebook</span>
-                                <span class="jsoc-sub">Follow</span>
+                                <span class="jsoc-name">GitHub</span>
+                                <span class="jsoc-sub">Projects</span>
                             </div>
                         </a>
                         <!-- WhatsApp -->
@@ -363,136 +481,419 @@
     </footer>
 
     <script>
-    /* ── Particle Constellation Background ─────────────────────── */
+    /* ── Interactive Particle Background (mouse-reactive) ─────── */
     (function () {
         const canvas = document.getElementById('particle-canvas');
-        const ctx    = canvas.getContext('2d');
-        let W, H, particles;
-        const COUNT    = 80;
-        const MAX_DIST = 140;
-        const SPEED    = 0.35;
+        const ctx    = canvas.getContext('2d', { alpha: true });
 
-        function resize() {
-            W = canvas.width  = window.innerWidth;
-            H = canvas.height = window.innerHeight;
+        let width = 0, height = 0, dpr = 1;
+        let rafId = 0, lastFrameTs = 0, time = 0;
+        let particles = [];
+
+        const mouse       = { x: -9999, y: -9999, active: false, clicked: false };
+        const smoothMouse = { x: -9999, y: -9999 };
+
+        // Theme detection via data-theme attribute
+        let _dark = document.documentElement.getAttribute('data-theme') !== 'light';
+        new MutationObserver(() => {
+            _dark = document.documentElement.getAttribute('data-theme') !== 'light';
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+        function resizeCanvas() {
+            dpr    = Math.min(window.devicePixelRatio || 1, 2);
+            width  = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width        = width  * dpr;
+            canvas.height       = height * dpr;
+            canvas.style.width  = width  + 'px';
+            canvas.style.height = height + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
-        function isDark() {
-            return document.documentElement.getAttribute('data-theme') !== 'light';
-        }
-
-        function mkParticle() {
-            const angle = Math.random() * Math.PI * 2;
-            const spd   = SPEED * (0.4 + Math.random() * 0.8);
+        function createParticle(w, h, px, py) {
             return {
-                x:  Math.random() * W,
-                y:  Math.random() * H,
-                vx: Math.cos(angle) * spd,
-                vy: Math.sin(angle) * spd,
-                r:  1 + Math.random() * 1.5
+                x: px != null ? px : Math.random() * w,
+                y: py != null ? py : Math.random() * h,
+                z: Math.random(),
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                vz: (Math.random() - 0.5) * 0.003,
+                baseRadius: Math.random() * 2.2 + 0.6,
+                hue: 200 + Math.random() * 40,
+                life: 0,
+                maxLife: Infinity,
+                trail: [],
             };
         }
 
-        function init() { resize(); particles = Array.from({ length: COUNT }, mkParticle); }
+        function init() {
+            resizeCanvas();
+            const baseCount = Math.floor((width * height) / 6000);
+            const count = Math.min(Math.max(baseCount, 80), 350);
+            particles = [];
+            for (let i = 0; i < count; i++) particles.push(createParticle(width, height));
+        }
 
-        function draw() {
-            const dark = isDark();
-            ctx.clearRect(0, 0, W, H);
+        // Mouse / touch events
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+        }, { passive: true });
 
-            for (const p of particles) {
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > W) p.vx *= -1;
-                if (p.y < 0 || p.y > H) p.vy *= -1;
+        window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+        window.addEventListener('click', e => {
+            mouse.x = e.clientX; mouse.y = e.clientY; mouse.clicked = true;
+            for (let i = 0; i < 8; i++) {
+                const p = createParticle(width, height, e.clientX, e.clientY);
+                const angle = (Math.PI * 2 * i) / 8;
+                p.vx = Math.cos(angle) * 2.5;
+                p.vy = Math.sin(angle) * 2.5;
+                p.maxLife = 150;
+                p.hue = 270 + Math.random() * 70;
+                particles.push(p);
+            }
+        });
+
+        window.addEventListener('touchmove', e => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+                mouse.active = true;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => { mouse.active = false; });
+
+        const CELL_SIZE = 150;
+        function buildGrid() {
+            const grid = new Map();
+            for (let i = 0; i < particles.length; i++) {
+                const p   = particles[i];
+                const key = `${Math.floor(p.x / CELL_SIZE)},${Math.floor(p.y / CELL_SIZE)}`;
+                const cell = grid.get(key);
+                if (cell) cell.push(i); else grid.set(key, [i]);
+            }
+            return grid;
+        }
+
+        function animate(timestamp) {
+            const rawDt = lastFrameTs ? (timestamp - lastFrameTs) / 1000 : 0.016;
+            const dt    = Math.min(rawDt, 0.033);
+            lastFrameTs = timestamp;
+            time += dt;
+            const t = time;
+
+            const particleAlpha = _dark ? 0.65 : 0.5;
+            const lineAlpha     = _dark ? 0.15 : 0.10;
+            const glowAlpha     = _dark ? 0.20 : 0.12;
+            const maxDist       = 130;
+            const dtScale       = dt / 0.016;
+
+            // Smooth (lerp) mouse position for silky tracking
+            const lerpSpeed = 1 - Math.pow(0.05, dt);
+            if (mouse.active) {
+                smoothMouse.x += (mouse.x - smoothMouse.x) * lerpSpeed;
+                smoothMouse.y += (mouse.y - smoothMouse.y) * lerpSpeed;
             }
 
+            ctx.clearRect(0, 0, width, height);
+
+            // Radial glow under cursor
+            if (mouse.active) {
+                const g = ctx.createRadialGradient(smoothMouse.x, smoothMouse.y, 0, smoothMouse.x, smoothMouse.y, 350);
+                g.addColorStop(0,   _dark ? 'rgba(59,130,246,0.05)'  : 'rgba(59,130,246,0.035)');
+                g.addColorStop(0.4, _dark ? 'rgba(59,130,246,0.02)'  : 'rgba(59,130,246,0.012)');
+                g.addColorStop(1,   'transparent');
+                ctx.fillStyle = g;
+                ctx.fillRect(smoothMouse.x - 350, smoothMouse.y - 350, 700, 700);
+            }
+
+            // ── Physics update ─────────────────────────────────────
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life++;
+
+                if (p.life > p.maxLife) { particles.splice(i, 1); continue; }
+
+                // Depth oscillation
+                p.z += p.vz * dtScale;
+                if (p.z < 0 || p.z > 1) { p.vz *= -1; p.z = Math.max(0, Math.min(1, p.z)); }
+
+                const depthScale    = 0.4 + p.z * 0.6;
+                const parallaxFactor = 0.3 + p.z * 0.7;
+
+                // Cursor attraction + swirl
+                if (mouse.active) {
+                    const dx = smoothMouse.x - p.x;
+                    const dy = smoothMouse.y - p.y;
+                    const distSq = dx * dx + dy * dy;
+                    const iR = 350 * depthScale;
+                    if (distSq < iR * iR && distSq > 1) {
+                        const dist   = Math.sqrt(distSq);
+                        const tn     = 1 - dist / iR;
+                        const eased  = tn * tn * (3 - 2 * tn); // smoothstep
+                        const force  = eased * 0.12 * parallaxFactor * dtScale;
+                        const angle  = Math.atan2(dy, dx);
+                        p.vx += Math.cos(angle) * force * 0.55;
+                        p.vy += Math.sin(angle) * force * 0.55;
+                        const tang = angle + Math.PI * 0.5;
+                        p.vx += Math.cos(tang) * force * 0.45;
+                        p.vy += Math.sin(tang) * force * 0.45;
+                    }
+                }
+
+                // Click repulsion wave
+                if (mouse.clicked) {
+                    const dx = p.x - smoothMouse.x;
+                    const dy = p.y - smoothMouse.y;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq < 90000 && distSq > 1) {
+                        const dist  = Math.sqrt(distSq);
+                        const tn    = 1 - dist / 300;
+                        const force = tn * tn * 5 * dtScale;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
+                    }
+                }
+
+                // Gentle ambient drift
+                p.vx += Math.sin(t * 0.3 + p.y * 0.008) * 0.003 * dtScale;
+                p.vy += Math.cos(t * 0.2 + p.x * 0.008) * 0.003 * dtScale;
+
+                // Exponential damping
+                const damping = Math.pow(0.988, dtScale);
+                p.vx *= damping; p.vy *= damping;
+
+                // Speed cap
+                const speedSq = p.vx * p.vx + p.vy * p.vy;
+                const maxSpeed = 3.5;
+                if (speedSq > maxSpeed * maxSpeed) {
+                    const s = Math.sqrt(speedSq);
+                    p.vx *= maxSpeed / s; p.vy *= maxSpeed / s;
+                }
+
+                // Move
+                p.x += p.vx * dtScale;
+                p.y += p.vy * dtScale;
+
+                // Soft edge wrapping
+                const buf = 60;
+                if (p.x < -buf)          p.x += width  + buf * 2;
+                else if (p.x > width + buf)  p.x -= width  + buf * 2;
+                if (p.y < -buf)          p.y += height + buf * 2;
+                else if (p.y > height + buf) p.y -= height + buf * 2;
+
+                // Trail
+                const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (spd > 1.0) {
+                    p.trail.push({ x: p.x, y: p.y, alpha: Math.min(spd / 3, 1) });
+                    if (p.trail.length > 8) p.trail.shift();
+                } else if (p.trail.length > 0) {
+                    p.trail[0].alpha *= 0.85;
+                    if (p.trail[0].alpha < 0.01) p.trail.shift();
+                }
+            }
+
+            mouse.clicked = false;
+
+            // ── Draw connections (spatial grid) ────────────────────
+            const grid = buildGrid();
             for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < MAX_DIST) {
-                        const alpha = (1 - dist / MAX_DIST) * (dark ? 0.25 : 0.18);
-                        ctx.beginPath();
-                        ctx.strokeStyle = dark
-                            ? `rgba(129,140,248,${alpha.toFixed(3)})`
-                            : `rgba(99,102,241,${alpha.toFixed(3)})`;
-                        ctx.lineWidth = 0.7;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
+                const p  = particles[i];
+                const gx = Math.floor(p.x / CELL_SIZE);
+                const gy = Math.floor(p.y / CELL_SIZE);
+                for (let ndx = -1; ndx <= 1; ndx++) {
+                    for (let ndy = -1; ndy <= 1; ndy++) {
+                        const cell = grid.get(`${gx + ndx},${gy + ndy}`);
+                        if (!cell) continue;
+                        for (const j of cell) {
+                            if (j <= i) continue;
+                            const o = particles[j];
+                            const dx = p.x - o.x, dy = p.y - o.y;
+                            const distSq   = dx * dx + dy * dy;
+                            const avgDepth = (p.z + o.z) * 0.5;
+                            const lmd      = maxDist * (0.6 + avgDepth * 0.4);
+                            if (distSq < lmd * lmd) {
+                                const dist    = Math.sqrt(distSq);
+                                const tn      = 1 - dist / lmd;
+                                const opacity = tn * tn * lineAlpha * (0.5 + avgDepth * 0.5);
+                                const hue     = (p.hue + o.hue) * 0.5;
+                                if (tn > 0.7) {
+                                    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(o.x, o.y);
+                                    ctx.strokeStyle = `hsla(${hue},75%,65%,${opacity * 0.35})`;
+                                    ctx.lineWidth = 1.8; ctx.stroke();
+                                }
+                                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(o.x, o.y);
+                                ctx.strokeStyle = `hsla(${hue},65%,55%,${opacity})`;
+                                ctx.lineWidth = 0.5 + avgDepth * 0.4; ctx.stroke();
+                            }
+                        }
                     }
                 }
             }
 
+            // ── Draw particles ─────────────────────────────────────
             for (const p of particles) {
-                ctx.beginPath();
-                ctx.fillStyle = dark ? 'rgba(129,140,248,0.65)' : 'rgba(99,102,241,0.45)';
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fill();
+                const depthScale = 0.4 + p.z * 0.6;
+                const radius     = p.baseRadius * depthScale;
+                const alpha      = particleAlpha * (0.4 + p.z * 0.6);
+
+                let fadeAlpha = 1;
+                if (p.maxLife !== Infinity) {
+                    const lr = p.life / p.maxLife;
+                    fadeAlpha = 1 - lr * lr;
+                }
+
+                // Trail
+                if (p.trail.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.trail[0].x, p.trail[0].y);
+                    for (let ti = 1; ti < p.trail.length; ti++) ctx.lineTo(p.trail[ti].x, p.trail[ti].y);
+                    ctx.lineTo(p.x, p.y);
+                    ctx.strokeStyle = `hsla(${p.hue},65%,55%,${alpha * 0.2 * fadeAlpha})`;
+                    ctx.lineWidth = radius * 0.5; ctx.stroke();
+                }
+
+                // Glow for large particles
+                if (radius > 2.0) {
+                    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 3);
+                    glow.addColorStop(0, `hsla(${p.hue},75%,60%,${glowAlpha * depthScale * fadeAlpha})`);
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, radius * 3, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // Core dot
+                ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue},80%,62%,${alpha * fadeAlpha})`; ctx.fill();
             }
 
-            requestAnimationFrame(draw);
+            // ── Pulsing cursor ring ────────────────────────────────
+            if (mouse.active) {
+                const pulseR   = 16 + Math.sin(t * 2.5) * 3;
+                const ringA    = 0.06 + Math.sin(t * 1.8) * 0.02;
+                const ring     = ctx.createRadialGradient(
+                    smoothMouse.x, smoothMouse.y, pulseR - 3,
+                    smoothMouse.x, smoothMouse.y, pulseR + 10
+                );
+                ring.addColorStop(0,   'transparent');
+                ring.addColorStop(0.5, `hsla(211,75%,60%,${ringA})`);
+                ring.addColorStop(1,   'transparent');
+                ctx.fillStyle = ring;
+                ctx.beginPath(); ctx.arc(smoothMouse.x, smoothMouse.y, pulseR + 10, 0, Math.PI * 2); ctx.fill();
+            }
+
+            rafId = requestAnimationFrame(animate);
         }
 
-        window.addEventListener('resize', resize);
+        // Pause when tab is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) cancelAnimationFrame(rafId);
+            else { lastFrameTs = 0; rafId = requestAnimationFrame(animate); }
+        });
+
+        window.addEventListener('resize', () => { resizeCanvas(); });
+
         init();
-        draw();
+        rafId = requestAnimationFrame(animate);
     })();
     </script>
 
-    <script src="js/config.js"></script>
-    <script src="js/api-client.js"></script>
-    <script src="js/client-info.js"></script>
-    <script src="js/theme.js?v=3"></script>
-    <script src="js/auth.js?v=4"></script>
-    <script src="js/storage.js?v=2"></script>
-    <script src="js/speedtest.js?v=9"></script>
+    <script src="assets/js/shared/config.js"></script>
+    <script src="assets/js/shared/api-client.js"></script>
+    <script src="assets/js/shared/client-info.js"></script>
+    <script src="assets/js/shared/theme.js"></script>
+    <script src="assets/js/shared/auth.js"></script>
+    <script src="assets/js/shared/site-config.js"></script>
+    <script src="assets/js/shared/storage.js"></script>
+    <script src="assets/js/speedtest.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Mobile menu toggle
-            const navToggle = document.getElementById('nav-toggle');
-            const navMenu   = document.getElementById('nav-menu');
+            // ── Navbar: Mobile menu + Dropdown ──────────────────────────
+            const navToggle  = document.getElementById('nav-toggle');
+            const navMenu    = document.getElementById('nav-menu');
             const navOverlay = document.getElementById('nav-overlay');
+            const pageScroll = document.querySelector('.page-scroll');
 
             function openMenu() {
                 navMenu.classList.add('active');
+                navToggle.setAttribute('aria-expanded', 'true');
                 navToggle.classList.add('open');
-                navOverlay.style.display = 'block';
-                requestAnimationFrame(() => navOverlay.classList.add('active'));
-                document.body.style.overflow = 'hidden';
+                navOverlay.classList.add('active');
+                if (pageScroll) pageScroll.style.overflow = 'hidden';
             }
             function closeMenu() {
                 navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
                 navToggle.classList.remove('open');
                 navOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-                setTimeout(() => { navOverlay.style.display = 'none'; }, 280);
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+                if (pageScroll) pageScroll.style.overflow = '';
+                closeAllDropdowns();
             }
-
-            if (navToggle && navMenu) {
-                navToggle.addEventListener('click', e => {
-                    e.stopPropagation();
-                    navMenu.classList.contains('active') ? closeMenu() : openMenu();
+            function closeAllDropdowns() {
+                document.querySelectorAll('.dropdown-toggle[aria-expanded="true"]').forEach(btn => {
+                    btn.setAttribute('aria-expanded', 'false');
+                    const ddId = btn.dataset.dropdown;
+                    const menu = document.getElementById('dd-' + ddId);
+                    if (menu) menu.classList.remove('show');
+                    btn.classList.remove('dd-open');
                 });
             }
-            if (navOverlay) {
-                navOverlay.addEventListener('click', closeMenu);
-            }
 
-            // Dropdown menus
+            // Portal: pindahkan semua dropdown-menu ke body agar benar-benar bebas dari stacking context
             document.querySelectorAll('.dropdown').forEach(dd => {
-                const toggle = dd.querySelector('.dropdown-toggle');
-                const menu   = dd.querySelector('.dropdown-menu');
-                if (!toggle || !menu) return;
-                toggle.addEventListener('click', e => {
-                    e.preventDefault(); e.stopPropagation();
-                    document.querySelectorAll('.dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
-                    menu.classList.toggle('show');
-                });
+                const menu = dd.querySelector('.dropdown-menu');
+                if (menu) document.body.appendChild(menu);
             });
-            document.addEventListener('click', () => {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+
+            function positionDropdown(btn, menu) {
+                // Set sementara agar bisa ukur lebar
+                menu.style.visibility = 'hidden';
+                menu.style.display = 'block';
+                const menuWidth = menu.offsetWidth || 220;
+                menu.style.display = '';
+                menu.style.visibility = '';
+
+                const rect = btn.getBoundingClientRect();
+                let left = rect.left + rect.width / 2 - menuWidth / 2;
+                if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
+                if (left < 8) left = 8;
+                menu.style.top  = (rect.bottom + 8) + 'px';
+                menu.style.left = left + 'px';
+            }
+
+            navToggle && navToggle.addEventListener('click', e => {
+                e.stopPropagation();
+                navMenu.classList.contains('active') ? closeMenu() : openMenu();
+            });
+            navOverlay && navOverlay.addEventListener('click', closeMenu);
+
+            // Dropdown — event delegation pada navbar (bukan document)
+            document.getElementById('navbar').addEventListener('click', e => {
+                const btn = e.target.closest('.dropdown-toggle');
+                if (btn) {
+                    e.stopPropagation();
+                    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+                    closeAllDropdowns();
+                    if (!isOpen) {
+                        const ddId = btn.dataset.dropdown;
+                        const menu = document.getElementById('dd-' + ddId);
+                        if (menu) {
+                            positionDropdown(btn, menu);
+                            btn.setAttribute('aria-expanded', 'true');
+                            btn.classList.add('dd-open');
+                            menu.classList.add('show');
+                        }
+                    }
+                    return;
+                }
+                if (!e.target.closest('.dropdown-menu')) closeAllDropdowns();
+            });
+            // Klik di luar navbar & dropdown — tutup semua
+            document.addEventListener('click', e => {
+                if (!e.target.closest('#navbar') && !e.target.closest('.dropdown-menu')) {
+                    closeAllDropdowns();
+                }
             });
 
             // Server info cards update on select change
@@ -508,7 +909,7 @@
                 if (!url) {
                     scServer.innerHTML = 'Pilih server terlebih dahulu';
                 } else if (website) {
-                    scServer.innerHTML = `<a href="${website}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline dotted" title="Kunjungi website ${name}">${name}</a>`;
+                    scServer.innerHTML = `<a href="${website}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none" title="Kunjungi website ${name}">${name}</a>`;
                 } else {
                     scServer.textContent = name;
                 }
@@ -546,11 +947,152 @@
                 }).observe(startBtn, { attributes: true, attributeFilter: ['disabled'] });
             }
 
+            // Inisiasi custom server picker
+            initCustomPicker();
+
             // Load approved servers from storage into dropdown
             await loadApprovedServersToDropdown();
+            // Sync custom picker setelah server di-load
+            syncCustomPicker();
             // Re-render history now that dropdown options are populated (enriches old entries)
             if (typeof loadHistory === 'function') await loadHistory();
         });
+
+        /* ── Custom Server Picker ─────────────────────────── */
+        // Cache latency & distance untuk ditampilkan di list item
+        const _sspLatency  = new Map(); // url → ms
+        const _sspDistance = new Map(); // url → text
+
+        function initCustomPicker() {
+            const trigger  = document.getElementById('ssp-trigger');
+            const dropdown = document.getElementById('ssp-dropdown');
+            const search   = document.getElementById('ssp-search');
+            const list     = document.getElementById('ssp-list');
+            const sel      = document.getElementById('server-select');
+            if (!trigger || !dropdown || !sel) return;
+
+            // Portal ke body — agar position:fixed selalu relatif viewport
+            // (ancestor dengan CSS transform akan merusak fixed positioning)
+            document.body.appendChild(dropdown);
+
+            function openPicker() {
+                // Posisikan dropdown tepat di bawah trigger
+                const rect = trigger.getBoundingClientRect();
+                const ddW  = Math.min(480, window.innerWidth - 24);
+                let left   = rect.left;
+                if (left + ddW > window.innerWidth - 12) left = window.innerWidth - ddW - 12;
+                if (left < 12) left = 12;
+                dropdown.style.top   = (rect.bottom + 6) + 'px';
+                dropdown.style.left  = left + 'px';
+                dropdown.style.width = ddW + 'px';
+                dropdown.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                setTimeout(() => search.focus(), 80);
+            }
+            function closePicker() {
+                dropdown.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+                search.value = '';
+                renderList('');
+            }
+
+            trigger.addEventListener('click', e => {
+                e.stopPropagation();
+                dropdown.classList.contains('open') ? closePicker() : openPicker();
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('#ssp-wrap') && !e.target.closest('#ssp-dropdown') && e.target !== trigger) closePicker();
+            });
+            search.addEventListener('input', () => renderList(search.value));
+
+            function pingClass(ms) {
+                if (ms <= 30)  return '';
+                if (ms <= 100) return 'slow';
+                return 'bad';
+            }
+
+            function renderList(query) {
+                const q = query.trim().toLowerCase();
+                const opts = [...sel.options].filter(o => o.value && !o.disabled);
+                const filtered = q ? opts.filter(o => {
+                    const name = (o.dataset.name || o.text).toLowerCase();
+                    const loc  = (o.dataset.location || '').toLowerCase();
+                    return name.includes(q) || loc.includes(q);
+                }) : opts;
+
+                if (filtered.length === 0) {
+                    list.innerHTML = `<li class="ssp-empty">${q ? 'Server tidak ditemukan' : 'Belum ada server aktif'}</li>`;
+                    return;
+                }
+
+                list.innerHTML = filtered.map(o => {
+                    const url      = o.value;
+                    const name     = o.dataset.name || o.text;
+                    const loc      = o.dataset.location || '';
+                    const latency  = _sspLatency.get(url);
+                    const dist     = _sspDistance.get(url) || '';
+                    const active   = url === sel.value ? ' active' : '';
+                    const pingBadge = latency != null
+                        ? `<span class="ssp-item-ping ${pingClass(latency)}">${latency} ms</span>`
+                        : '';
+                    const distBadge = dist
+                        ? `<span class="ssp-item-dist">${dist}</span>`
+                        : '';
+                    return `
+                    <li class="ssp-item${active}" data-url="${url}" role="option">
+                        <div class="ssp-item-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                        </div>
+                        <div class="ssp-item-body">
+                            <div class="ssp-item-name">${name}</div>
+                            <div class="ssp-item-meta">
+                                ${loc ? `<span class="ssp-item-loc">📍 ${loc}</span>` : ''}
+                                ${distBadge}
+                            </div>
+                        </div>
+                        ${pingBadge}
+                    </li>`;
+                }).join('');
+
+                list.querySelectorAll('.ssp-item').forEach(li => {
+                    li.addEventListener('click', () => {
+                        sel.value = li.dataset.url;
+                        sel.dispatchEvent(new Event('change'));
+                        closePicker();
+                    });
+                });
+            }
+
+            // Initial render
+            renderList('');
+
+            // Update trigger text saat select berubah
+            sel.addEventListener('change', () => {
+                const opt = sel.options[sel.selectedIndex];
+                const name = opt ? (opt.dataset.name || opt.text) : '';
+                document.getElementById('ssp-trigger-text').textContent = name || 'Pilih server…';
+                renderList(search.value);
+            });
+        }
+
+        function syncCustomPicker() {
+            // Rebuild list setelah server di-load
+            const search = document.getElementById('ssp-search');
+            const q = search ? search.value : '';
+            // re-render via trigger change
+            const sel = document.getElementById('server-select');
+            if (sel) sel.dispatchEvent(new Event('change'));
+            // Render ulang list
+            const list = document.getElementById('ssp-list');
+            if (!list) return;
+            const opts = [...sel.options].filter(o => o.value && !o.disabled);
+            if (opts.length === 0) {
+                list.innerHTML = '<li class="ssp-empty">Belum ada server aktif</li>';
+                return;
+            }
+            // Trigger render ulang — cukup simulate input
+            if (search) search.dispatchEvent(new Event('input'));
+        }
 
         async function loadApprovedServersToDropdown() {
             const serverSelect = document.getElementById('server-select');
@@ -597,6 +1139,19 @@
                 } catch { clearTimeout(t); return { ep, latency: Infinity }; }
             }));
             const best = results.filter(r => r.latency < Infinity).sort((a, b) => a.latency - b.latency)[0];
+
+            // Cache latency untuk custom picker
+            results.forEach(r => { if (r.latency < Infinity) _sspLatency.set(r.ep.value, r.latency); });
+            // Hitung jarak untuk setiap server secara paralel (background)
+            endpoints.forEach(ep => {
+                calcServerDistance(ep.value).then(r => {
+                    _sspDistance.set(ep.value, r.text === '—' ? '' : r.text);
+                    // Re-render list jika dropdown terbuka
+                    const search = document.getElementById('ssp-search');
+                    if (search) search.dispatchEvent(new Event('input'));
+                }).catch(() => {});
+            });
+
             if (best) {
                 serverSelect.value = best.ep.value;
                 serverSelect.dispatchEvent(new Event('change'));
@@ -638,7 +1193,7 @@
             } catch {}
             // Fallback: IP-based geolocation
             try {
-                const d = await (await fetch('http://ip-api.com/json/?fields=status,lat,lon')).json();
+                const d = await (await fetch('https://ip-api.com/json/?fields=status,lat,lon')).json();
                 if (d.status === 'success') { _userCoords = { lat: d.lat, lon: d.lon }; return _userCoords; }
             } catch {}
             return null;
@@ -651,7 +1206,7 @@
                 // Get server geo (cached)
                 if (!_svrGeoCache.has(host)) {
                     try {
-                        const d = await (await fetch(`http://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
+                        const d = await (await fetch(`https://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
                         _svrGeoCache.set(host, d.status === 'success' ? { lat: d.lat, lon: d.lon } : null);
                     } catch { _svrGeoCache.set(host, null); }
                 }
@@ -676,84 +1231,19 @@
         }
     </script>
     <script>
-    // Apply site config: fetch from API, fallback to localStorage cache
-    (async function applySiteConfig() {
-        const SITE_CFG_KEY = 'site_config';
-        const API_URL = (window.API_URL || 'http://localhost:3001');
-
-        let cfg = null;
-        // 1. Try API (fast timeout so it doesn't block page)
-        try {
-            const ac = new AbortController();
-            const t = setTimeout(() => ac.abort(), 3000);
-            const res = await fetch(API_URL + '/api/site-settings', { cache: 'no-cache', signal: ac.signal });
-            clearTimeout(t);
-            if (res.ok) {
-                cfg = await res.json();
-                // Update localStorage cache for offline fallback
-                if (cfg && Object.keys(cfg).length > 0) {
-                    localStorage.setItem(SITE_CFG_KEY, JSON.stringify(cfg));
-                }
-            }
-        } catch { /* network error or timeout — fall through to cache */ }
-
-        // 2. Fallback: localStorage cache
-        if (!cfg || Object.keys(cfg).length === 0) {
-            try {
-                const raw = localStorage.getItem(SITE_CFG_KEY);
-                if (raw) cfg = JSON.parse(raw);
-            } catch {}
-        }
-
+    // site-config.js (loaded above) handles: logo, brand, nav links, email, phone, maps.
+    // This block handles index.html-specific elements: social cards and join-section buttons.
+    function applyIndexSiteConfig(cfg) {
         if (!cfg || Object.keys(cfg).length === 0) return;
 
-        // Build email mailto template from config
+        var waText = cfg.waMessage || 'Halo, saya ingin berlangganan layanan internet SKY TECH.';
+        var tgText = cfg.tgMessage || 'Halo, saya ingin berlangganan layanan internet SKY TECH.';
         var emailSubject = cfg.emailSubject || 'Ingin Berlangganan SKY TECH';
         var emailBody    = cfg.emailBody    || 'Halo, saya ingin berlangganan layanan internet SKY TECH.';
         var mailtoQuery  = '?subject=' + encodeURIComponent(emailSubject) + '&body=' + encodeURIComponent(emailBody);
-        var waText       = cfg.waMessage    || 'Halo, saya ingin berlangganan layanan internet SKY TECH.';
-        var tgText       = cfg.tgMessage    || 'Halo, saya ingin berlangganan layanan internet SKY TECH.';
 
-        // Apply config to DOM
-        if (cfg.logoUrl) {
-            document.querySelectorAll('img.logo-img').forEach(el => el.src = cfg.logoUrl);
-            var fav = document.querySelector('link[rel="icon"]');
-            if (fav) fav.href = cfg.logoUrl;
-        }
-        if (cfg.brandMain) document.querySelectorAll('.lbn-main').forEach(el => el.textContent = cfg.brandMain);
-        if (cfg.brandSub)  document.querySelectorAll('.lbn-sub').forEach(el => el.textContent = cfg.brandSub);
-
-        if (cfg.linkRegister) {
-            document.querySelectorAll('a.dropdown-link[href*="register"]').forEach(el => el.href = cfg.linkRegister);
-        }
-        if (cfg.linkCustLogin) {
-            document.querySelectorAll('a.dropdown-link[href*="billing"]').forEach(el => {
-                if (!el.href.includes('register')) el.href = cfg.linkCustLogin;
-            });
-        }
-        if (cfg.email) {
-            var mailtoHref = 'mailto:' + cfg.email + mailtoQuery;
-            document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
-                el.href = mailtoHref;
-                if (/^[^\s@]+@[^\s@]+$/.test(el.textContent.trim())) el.textContent = cfg.email;
-            });
-        }
-        if (cfg.phone) {
-            var num = cfg.phone.replace(/^\+/, '');
-            document.querySelectorAll('a[href^="https://wa.me/"]').forEach(el => {
-                el.href = 'https://wa.me/' + num + '?text=' + encodeURIComponent(waText);
-                var t = el.textContent.trim();
-                if (/^[+\d\s-]+$/.test(t) && t.length > 6) el.textContent = '+' + num;
-            });
-        }
-        if (cfg.address) {
-            document.querySelectorAll('a[href*="maps.app.goo.gl"], a[href*="maps.google"]').forEach(el => {
-                if (cfg.maps) el.href = cfg.maps;
-                el.textContent = cfg.address;
-            });
-        }
-        if (cfg.socialTiktok)   document.querySelectorAll('a.jsoc-tiktok').forEach(el => el.href = cfg.socialTiktok);
-        if (cfg.socialFacebook)  document.querySelectorAll('a.jsoc-fb').forEach(el => el.href = cfg.socialFacebook);
+        if (cfg.socialTiktok)  document.querySelectorAll('a.jsoc-tiktok').forEach(el => el.href = cfg.socialTiktok);
+        if (cfg.socialFacebook) document.querySelectorAll('a.jsoc-fb').forEach(el => el.href = cfg.socialFacebook);
         if (cfg.socialWhatsapp) {
             var wnum = cfg.socialWhatsapp.replace(/^\+/, '');
             document.querySelectorAll('a.jsoc-wa').forEach(el => el.href = 'https://wa.me/' + wnum + '?text=' + encodeURIComponent(waText));
@@ -763,7 +1253,6 @@
             var tgBase = tg.startsWith('@') ? 'https://t.me/' + tg.slice(1) : 'https://t.me/' + tg;
             document.querySelectorAll('a.jsoc-tg').forEach(el => el.href = tgBase);
         }
-        // Quick-contact buttons
         if (cfg.phone) {
             var wn = cfg.phone.replace(/^\+/, '');
             document.querySelectorAll('a.join-btn-wa').forEach(el => el.href = 'https://wa.me/' + wn + '?text=' + encodeURIComponent(waText));
@@ -773,7 +1262,14 @@
                 el.href = 'mailto:' + cfg.email + mailtoQuery;
             });
         }
-    })();
+    }
+    // Listen for site-config.js to finish; also try cached data immediately
+    document.addEventListener('siteConfigReady', e => applyIndexSiteConfig(e.detail));
+    try {
+        var _cached = localStorage.getItem('site_config');
+        if (_cached) applyIndexSiteConfig(JSON.parse(_cached));
+    } catch {}
     </script>
+    </div><!-- end .page-scroll -->
 </body>
 </html>

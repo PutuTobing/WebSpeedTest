@@ -8,7 +8,9 @@
     <script>const _t=localStorage.getItem('speedtest_theme');if(_t==='light')document.documentElement.setAttribute('data-theme','light');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
 </head>
 <body>
     <!-- Animated Background -->
@@ -18,51 +20,65 @@
         <div class="orb orb-3"></div>
         <div class="orb orb-4"></div>
     </div>
-    <!-- Navigation Header -->
-    <nav class="navbar">
+
+    <!-- Navigation Header — fixed, di luar scroll container -->
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="https://btd.co.id/">
-                    <img src="https://btd.co.id/LOGO%20SKY.png" alt="SKY TECH Logo" class="logo-img">
+                    <img src="https://pututobing.btd.co.id/AS142264.png" alt="SKY TECH Logo" class="logo-img">
+                    <span class="logo-brand-name">
+                        <span class="lbn-main">SKY TECH</span>
+                        <span class="lbn-sub">PT. SKY Base Technologhy Digital</span>
+                    </span>
                 </a>
             </div>
-            
+
             <div class="nav-menu" id="nav-menu">
                 <ul class="nav-list">
                     <li class="nav-item">
                         <a href="https://btd.co.id/" class="nav-link">Beranda</a>
                     </li>
-                    
                     <li class="nav-item">
                         <a href="index.html" class="nav-link">SpeedTest</a>
                     </li>
-                    
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle">Daftar</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">Daftar Berlangganan SKY HOME</a></li>
-                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server&body=Saya%20ingin%20ikut%20serta%20dalam%20pengembangan%20speedtest%20server%20localhost%20pada%20ISP%20regional." class="dropdown-link">Daftar Speedtest Server</a></li>
+                        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" data-dropdown="daftar">
+                            Daftar <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <ul class="dropdown-menu" id="dd-daftar">
+                            <li><a href="https://billing.btd.co.id/auth/register" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Daftar SKY HOME</a></li>
+                            <li><a href="mailto:noc@btd.co.id?subject=Ikut%20Serta%20Pengembangan%20Speedtest%20Server" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/></svg>
+                                Daftar Speedtest Server</a></li>
                         </ul>
                     </li>
-                    
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle active">Login</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="login.html" class="dropdown-link active">Login Speedtest Server</a></li>
-                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">Login Layanan Pelanggan</a></li>
+                        <button class="nav-link dropdown-toggle active dd-open" type="button" aria-expanded="true" data-dropdown="login">
+                            Login <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <ul class="dropdown-menu" id="dd-login">
+                            <li><a href="login.html" class="dropdown-link active">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                Login Speedtest Server</a></li>
+                            <li><a href="https://billing.btd.co.id/auth" class="dropdown-link">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                Login Layanan Pelanggan</a></li>
                         </ul>
                     </li>
                 </ul>
-                
-                <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
-                <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
             </div>
+
+            <button class="theme-toggle" id="theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">🌙</button>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
 
     <div class="login-container">
         <div class="login-box">
@@ -101,10 +117,89 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/api-client.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/login.js"></script>
+    <script src="assets/js/shared/config.js"></script>
+    <script src="assets/js/shared/api-client.js"></script>
+    <script src="assets/js/shared/theme.js"></script>
+    <script src="assets/js/shared/auth.js"></script>
+    <script src="assets/js/shared/site-config.js"></script>
+    <script src="assets/js/login.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navToggle  = document.getElementById('nav-toggle');
+        const navMenu    = document.getElementById('nav-menu');
+        const navOverlay = document.getElementById('nav-overlay');
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-toggle[aria-expanded="true"]').forEach(btn => {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.classList.remove('dd-open');
+                const ddId = btn.dataset.dropdown;
+                const menu = document.getElementById('dd-' + ddId);
+                if (menu) menu.classList.remove('show');
+            });
+        }
+        function positionDropdown(btn, menu) {
+            menu.style.visibility = 'hidden';
+            menu.style.display = 'block';
+            const menuWidth = menu.offsetWidth || 220;
+            menu.style.display = '';
+            menu.style.visibility = '';
+            const rect = btn.getBoundingClientRect();
+            let left = rect.left + rect.width / 2 - menuWidth / 2;
+            if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
+            if (left < 8) left = 8;
+            menu.style.top  = (rect.bottom + 8) + 'px';
+            menu.style.left = left + 'px';
+        }
+        // Portal: pindahkan semua dropdown-menu ke body agar bebas dari stacking context
+        document.querySelectorAll('.dropdown').forEach(dd => {
+            const menu = dd.querySelector('.dropdown-menu');
+            if (menu) document.body.appendChild(menu);
+        });
+        function openMenu() {
+            navMenu.classList.add('active');
+            navToggle.setAttribute('aria-expanded', 'true');
+            navToggle.classList.add('open');
+            navOverlay.classList.add('active');
+        }
+        function closeMenu() {
+            navMenu.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.classList.remove('open');
+            navOverlay.classList.remove('active');
+            closeAllDropdowns();
+        }
+
+        navToggle && navToggle.addEventListener('click', e => {
+            e.stopPropagation();
+            navMenu.classList.contains('active') ? closeMenu() : openMenu();
+        });
+        navOverlay && navOverlay.addEventListener('click', closeMenu);
+
+        document.getElementById('navbar').addEventListener('click', e => {
+            const btn = e.target.closest('.dropdown-toggle');
+            if (btn) {
+                e.stopPropagation();
+                const isOpen = btn.getAttribute('aria-expanded') === 'true';
+                closeAllDropdowns();
+                if (!isOpen) {
+                    const ddId = btn.dataset.dropdown;
+                    const menu = document.getElementById('dd-' + ddId);
+                    if (menu) {
+                        positionDropdown(btn, menu);
+                        btn.setAttribute('aria-expanded', 'true');
+                        btn.classList.add('dd-open');
+                        menu.classList.add('show');
+                    }
+                }
+                return;
+            }
+            if (!e.target.closest('.dropdown-menu')) closeAllDropdowns();
+        });
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#navbar') && !e.target.closest('.dropdown-menu')) closeAllDropdowns();
+        });
+    });
+    </script>
 </body>
 </html>
