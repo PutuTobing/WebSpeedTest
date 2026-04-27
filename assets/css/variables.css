@@ -1,0 +1,111 @@
+/* ================================================================
+   SKY TECH SpeedTest — Professional UI v2.0
+   BTD System | noc@btd.co.id | btd.co.id
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ── Design Tokens ──────────────────────────────────────────── */
+:root {
+    /* Dark theme (default) */
+    --bg:         #08080f;
+    --bg-2:       #0d0d1a;
+    --surface:    rgba(14, 14, 30, 0.82);
+    --surface-2:  rgba(20, 20, 42, 0.88);
+    --input-bg:   rgba(255, 255, 255, 0.05);
+    --overlay:    rgba(0, 0, 0, 0.55);
+
+    --text:       #dde2f0;
+    --text-2:     #6b7796;
+    --text-3:     #3d4560;
+
+    --accent:     #6366f1;
+    --accent-glow:rgba(99, 102, 241, 0.22);
+    --accent-2:   #8b5cf6;
+
+    --green:   #10b981;
+    --red:     #ef4444;
+    --yellow:  #f59e0b;
+
+    --border:   rgba(255, 255, 255, 0.07);
+    --border-2: rgba(99, 102, 241, 0.28);
+
+    --shadow-sm: 0 1px 6px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 18px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 36px rgba(0,0,0,0.6);
+
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-xl: 18px;
+
+    /* Aliases for backward compat */
+    --primary-color:   #6366f1;
+    --secondary-color: #8b5cf6;
+    --success-color:   #10b981;
+    --danger-color:    #ef4444;
+    --danger:          #ef4444;
+    --warning-color:   #f59e0b;
+    --dark-bg:         #08080f;
+    --bg-secondary:    rgba(20, 20, 42, 0.88);
+    --card-bg:         rgba(14, 14, 30, 0.82);
+    --text-primary:    #dde2f0;
+    --text-secondary:  #6b7796;
+    --border-color:    rgba(255, 255, 255, 0.07);
+    --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-3: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+
+    /* Orb colors */
+    --orb-1: rgba(99, 102, 241, 0.18);
+    --orb-2: rgba(139, 92, 246, 0.13);
+    --orb-3: rgba(6, 182, 212, 0.09);
+    --orb-4: rgba(16, 185, 129, 0.07);
+
+    --navbar-bg: rgba(6, 6, 14, 0.88);
+    --navbar-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Light Theme ─────────────────────────────────────────────── */
+[data-theme="light"] {
+    --bg:         #eff1f8;
+    --bg-2:       #e6e9f4;
+    --surface:    rgba(255, 255, 255, 0.88);
+    --surface-2:  rgba(248, 250, 255, 0.92);
+    --input-bg:   rgba(0, 0, 0, 0.04);
+
+    --text:       #0f172a;
+    --text-2:     #4b5675;
+    --text-3:     #94a3b8;
+
+    --border:     rgba(0, 0, 0, 0.08);
+    --border-2:   rgba(99, 102, 241, 0.22);
+
+    --shadow-sm:  0 1px 6px rgba(0,0,0,0.07);
+    --shadow-md:  0 4px 18px rgba(0,0,0,0.1);
+    --shadow-lg:  0 8px 36px rgba(0,0,0,0.13);
+
+    --card-bg:    rgba(255, 255, 255, 0.88);
+    --bg-secondary: rgba(248, 250, 255, 0.92);
+    --danger:     #ef4444;
+    --dark-bg:    #eff1f8;
+    --text-primary:   #0f172a;
+    --text-secondary: #4b5675;
+    --border-color:   rgba(0, 0, 0, 0.08);
+
+    --orb-1: rgba(99, 102, 241, 0.07);
+    --orb-2: rgba(139, 92, 246, 0.05);
+    --orb-3: rgba(6, 182, 212, 0.04);
+    --orb-4: rgba(16, 185, 129, 0.03);
+
+    --navbar-bg:     rgba(255, 255, 255, 0.9);
+    --navbar-border: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */

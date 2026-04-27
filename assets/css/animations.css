@@ -1,0 +1,402 @@
+/* ================================================================
+   ANIMATIONS — Modern UI/UX micro-interactions + entrance effects
+   ================================================================ */
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes gradientFlow {
+    0%   { background-position: 0%   50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0%   50%; }
+}
+
+@keyframes badgeBreath {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(99,102,241,0),
+                    inset 0 0 0 0 rgba(99,102,241,0);
+    }
+    50% {
+        box-shadow: 0 0 18px 3px rgba(99,102,241,0.18),
+                    inset 0 0 0 1px rgba(99,102,241,0.12);
+    }
+}
+
+@keyframes shimmer {
+    0%   { background-position: -300% center; }
+    100% { background-position:  300% center; }
+}
+
+@keyframes iconPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.22) rotate(-5deg); }
+    70%  { transform: scale(0.92) rotate(3deg); }
+    100% { transform: scale(1); }
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* ── Hero section — staggered entrance ─────────────────────── */
+.st-badge {
+    animation:
+        fadeSlideUp  0.65s cubic-bezier(0.22, 1, 0.36, 1) both 0.08s,
+        badgeBreath  4.5s ease-in-out              1.2s infinite;
+}
+
+.st-title {
+    animation: fadeSlideUp 0.72s cubic-bezier(0.22, 1, 0.36, 1) both 0.18s;
+}
+
+.st-subtitle {
+    animation: fadeSlideUp 0.72s cubic-bezier(0.22, 1, 0.36, 1) both 0.28s;
+}
+
+/* ssp-wrap: fade only — NO transform, karena child #ssp-dropdown pakai
+   position:fixed dan transform pada parent akan merusak viewport anchoring */
+.ssp-wrap {
+    animation: fadeIn 0.72s ease both 0.38s;
+}
+
+.st-auto-hint {
+    animation: fadeSlideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both 0.45s;
+}
+
+.st-server-cards {
+    animation: fadeSlideUp 0.72s cubic-bezier(0.22, 1, 0.36, 1) both 0.52s;
+}
+
+/* ── Gauge + Metrics — entrance ─────────────────────────────── */
+.st-gauge-section {
+    animation: fadeIn 0.85s ease both 0.58s;
+}
+
+.st-metrics {
+    animation: fadeSlideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both 0.64s;
+}
+
+/* ── Gradient text — flowing color ─────────────────────────── */
+.gradient-word {
+    background: linear-gradient(
+        135deg,
+        #818cf8 0%,
+        #06b6d4 28%,
+        #a78bfa 55%,
+        #818cf8 100%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientFlow 5.5s linear infinite;
+}
+
+/* ── Navbar logo ─────────────────────────────────────────────── */
+.nav-logo a {
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.nav-logo a:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* ── Nav links — underline-slide effect ─────────────────────── */
+.nav-link {
+    position: relative;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 12px;
+    right: 12px;
+    height: 1.5px;
+    background: var(--accent);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* ── Dropdown toggle — chevron rotate ───────────────────────── */
+/* (already in navbar.css, just enhance the button hover glow) */
+.dropdown-toggle {
+    position: relative;
+    overflow: hidden;
+}
+.dropdown-toggle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(99,102,241,0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+.dropdown-toggle:hover::before,
+.dropdown-toggle.dd-open::before {
+    opacity: 1;
+}
+
+/* ── Dropdown items — indent slide ──────────────────────────── */
+.dropdown-link {
+    transition:
+        background  0.15s ease,
+        color       0.15s ease,
+        padding-left 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+        gap         0.22s ease !important;
+}
+.dropdown-link:hover {
+    padding-left: 20px !important;
+}
+
+/* ── Theme toggle ──────────────────────────────────────────── */
+.theme-toggle {
+    transition:
+        background 0.2s ease,
+        transform  0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.theme-toggle:hover {
+    transform: rotate(22deg) scale(1.18) !important;
+}
+
+/* ── Hamburger ─────────────────────────────────────────────── */
+.nav-toggle {
+    transition: transform 0.22s ease !important;
+}
+.nav-toggle:hover {
+    transform: scale(1.12) !important;
+}
+
+/* ── Server picker trigger ──────────────────────────────────── */
+.ssp-trigger {
+    transition:
+        border-color 0.22s ease,
+        box-shadow   0.22s ease,
+        transform    0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ssp-trigger:not([aria-expanded="true"]):hover {
+    transform: translateY(-2px) !important;
+}
+
+/* Server list item icon pop on hover */
+.ssp-item:hover .ssp-item-icon {
+    animation: iconPop 0.38s ease both;
+}
+
+/* ── Server info cards ──────────────────────────────────────── */
+.st-server-card {
+    transition:
+        border-color 0.22s ease,
+        transform    0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.28s ease !important;
+}
+.st-server-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: rgba(99, 102, 241, 0.5) !important;
+    box-shadow:
+        0 10px 32px rgba(99, 102, 241, 0.18),
+        0 0 0 1px rgba(99, 102, 241, 0.08) !important;
+}
+/* Icon pop on card hover */
+.st-server-card:hover .sc-icon {
+    animation: iconPop 0.38s ease both;
+}
+
+/* ── Metric cards ───────────────────────────────────────────── */
+/* Enhance existing hover (base already has border-color transition) */
+.metric-card {
+    transition:
+        border-color 0.22s ease,
+        transform    0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.28s ease !important;
+}
+.metric-card:hover {
+    transform: translateY(-6px) scale(1.025) !important;
+}
+.metric-card.ping:hover,
+.metric-card.jitter:hover {
+    box-shadow: 0 12px 36px rgba(245, 158, 11, 0.2) !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.metric-card.download:hover {
+    box-shadow: 0 12px 36px rgba(99, 102, 241, 0.22) !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+}
+.metric-card.upload:hover {
+    box-shadow: 0 12px 36px rgba(6, 182, 212, 0.22) !important;
+    border-color: rgba(6, 182, 212, 0.4) !important;
+}
+/* Icon bounce on metric card hover */
+.metric-card:hover .metric-icon {
+    animation: iconPop 0.42s ease both;
+}
+
+/* ── Client info bar items ──────────────────────────────────── */
+.cib-item {
+    transition:
+        border-color 0.22s ease,
+        transform    0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.28s ease !important;
+}
+.cib-item:hover {
+    transform: translateY(-4px) !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.14) !important;
+}
+.cib-item:hover .cib-icon {
+    animation: iconPop 0.38s ease both;
+}
+
+/* ── Stop button ────────────────────────────────────────────── */
+.btn-secondary {
+    transition:
+        background   0.2s ease,
+        transform    0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.22s ease !important;
+}
+.btn-secondary:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 22px rgba(239, 68, 68, 0.25) !important;
+}
+
+/* ── History entries ────────────────────────────────────────── */
+.history-entry {
+    transition:
+        transform    0.22s ease,
+        box-shadow   0.22s ease,
+        border-color 0.22s ease;
+}
+.history-entry:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    border-color: var(--border-2);
+}
+
+/* ── Join section — social cards ────────────────────────────── */
+.join-social-card {
+    transition:
+        transform    0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.28s ease,
+        border-color 0.22s ease !important;
+}
+.join-social-card:hover {
+    transform: translateY(-6px) scale(1.04) !important;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Social card icon pop */
+.join-social-card:hover .jsoc-icon {
+    animation: iconPop 0.4s ease both;
+}
+
+/* ── Contact list items — slide right ───────────────────────── */
+.join-contact-list li {
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.join-contact-list li:hover {
+    transform: translateX(6px);
+}
+
+/* ── Quick contact buttons ──────────────────────────────────── */
+.join-btn {
+    transition:
+        transform    0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow   0.24s ease,
+        filter       0.22s ease !important;
+}
+.join-btn:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    filter: brightness(1.12) !important;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* ── Scroll reveal — base state ─────────────────────────────── */
+.anim-reveal {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+    transition:
+        opacity   0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.anim-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Stagger delays for sibling items (enter only) */
+.anim-reveal[data-delay="1"] { transition-delay: 0.06s; }
+.anim-reveal[data-delay="2"] { transition-delay: 0.13s; }
+.anim-reveal[data-delay="3"] { transition-delay: 0.20s; }
+.anim-reveal[data-delay="4"] { transition-delay: 0.27s; }
+.anim-reveal[data-delay="5"] { transition-delay: 0.34s; }
+
+/* ── Bidirectional scroll reveal — EXIT state ────────────────── */
+/* Applied to join-section elements when they leave the viewport  */
+/* Slides back down (return to where they came from) + fades out  */
+.anim-reveal.is-leaving {
+    opacity: 0;
+    transform: translateY(36px) scale(0.97);
+    transition-delay: 0s !important; /* cancel stagger — exit all at once */
+}
+
+/* History item enter animation (added by JS when entry is prepended) */
+@keyframes historyIn {
+    from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)      scale(1); }
+}
+.history-entry-new {
+    animation: historyIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Shimmer text utility (optional highlight) ───────────────── */
+.text-shimmer {
+    background: linear-gradient(
+        120deg,
+        var(--text-2) 0%,
+        var(--text)   45%,
+        var(--text-2) 55%,
+        var(--text-2) 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 2.8s ease infinite;
+}
+
+/* ── Reduced motion — respect user preference ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration:       0.01ms !important;
+        animation-iteration-count: 1     !important;
+        transition-duration:      0.01ms !important;
+    }
+    .anim-reveal {
+        opacity: 1;
+        transform: none;
+    }
+    .gradient-word {
+        background: linear-gradient(135deg, #818cf8 0%, #06b6d4 55%, #a78bfa 100%);
+        background-size: 100% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
