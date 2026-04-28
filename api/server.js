@@ -6,6 +6,9 @@ const db      = require('./database');
 
 const app = express();
 
+// Trust reverse proxy (nginx) — needed for correct req.ip / x-forwarded-for parsing
+app.set('trust proxy', true);
+
 app.use(cors({
     origin: '*',
     methods: ['GET','POST','PUT','DELETE','OPTIONS'],
