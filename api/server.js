@@ -21,6 +21,7 @@ app.use('/api/endpoints',     require('./routes/endpoints'));
 app.use('/api/history',       require('./routes/history'));
 app.use('/api/site-settings', require('./routes/site-settings'));
 app.use('/api/backup',       require('./routes/backup'));
+app.use('/api/proxy-image',  require('./routes/proxy-image'));
 
 // Root + health check
 app.get('/', (_req, res) => res.json({ name: 'SpeedTest API', version: '1.0.0', status: 'running', docs: '/api/health' }));

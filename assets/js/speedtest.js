@@ -915,12 +915,14 @@ async function generateShareCard(item) {
 
     if (logoUrl) {
         try {
+            // Load logo lewat proxy backend agar tidak terkena CORS restriction
+            // (server eksternal tidak mengembalikan Access-Control-Allow-Origin)
+            const proxyUrl = `${window.API_URL || 'http://localhost:3001'}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
-                im.crossOrigin = 'anonymous';
                 im.onload  = () => resolve(im);
                 im.onerror = reject;
-                im.src = logoUrl;
+                im.src = proxyUrl;
             });
             // Clip ke lingkaran
             c.save();
