@@ -215,16 +215,29 @@ do_upgrade() {
 
     success "File aplikasi diupdate (.env tidak diubah)"
 
-    # Patch frontend config dengan port lama
+    # Patch frontend config — mendukung nginx (port 80/443) dan akses langsung
     step "Update konfigurasi frontend"
     local config_file="${INSTALL_DIR}/assets/js/shared/config.js"
-    if [[ -f "$config_file" ]]; then
-        cat > "$config_file" <<EOF
+    mkdir -p "$(dirname "$config_file")"
+    cat > "$config_file" <<EOF
 // Auto-configured by install.sh — updated: $(date '+%Y-%m-%d %H:%M:%S')
-window.API_URL = window.location.protocol + '//' + window.location.hostname + ':${API_PORT}';
+// Port ${API_PORT} digunakan saat akses langsung (bukan lewat nginx port 80/443)
+(function () {
+    var override = (typeof localStorage !== 'undefined' && localStorage.getItem('SPEEDTEST_API_URL')) || '';
+    if (override) { window.API_URL = override; return; }
+    var proto = window.location.protocol;
+    var host  = window.location.hostname;
+    var port  = parseInt(window.location.port, 10) || (proto === 'https:' ? 443 : 80);
+    if (port === 80 || port === 443) {
+        // nginx reverse proxy — API di origin yang sama, /api/ diteruskan ke Node.js
+        window.API_URL = proto + '//' + host;
+    } else {
+        // Akses langsung ke port frontend — API di port ${API_PORT}
+        window.API_URL = proto + '//' + host + ':${API_PORT}';
+    }
+})();
 EOF
-        success "Frontend config diupdate — API port: ${API_PORT}"
-    fi
+    success "Frontend config diupdate — API port: ${API_PORT} (nginx-aware)"
 
     # npm install
     step "Update Node.js dependencies"
@@ -568,9 +581,23 @@ patch_frontend_config() {
     mkdir -p "$(dirname "$config_file")"
     cat > "$config_file" <<EOF
 // Auto-configured by install.sh — $(date '+%Y-%m-%d %H:%M:%S')
-window.API_URL = window.location.protocol + '//' + window.location.hostname + ':${API_PORT}';
+// Port ${API_PORT} digunakan saat akses langsung (bukan lewat nginx port 80/443)
+(function () {
+    var override = (typeof localStorage !== 'undefined' && localStorage.getItem('SPEEDTEST_API_URL')) || '';
+    if (override) { window.API_URL = override; return; }
+    var proto = window.location.protocol;
+    var host  = window.location.hostname;
+    var port  = parseInt(window.location.port, 10) || (proto === 'https:' ? 443 : 80);
+    if (port === 80 || port === 443) {
+        // nginx reverse proxy — API di origin yang sama, /api/ diteruskan ke Node.js
+        window.API_URL = proto + '//' + host;
+    } else {
+        // Akses langsung ke port frontend — API di port ${API_PORT}
+        window.API_URL = proto + '//' + host + ':${API_PORT}';
+    }
+})();
 EOF
-    success "Frontend config diupdate — API port: ${API_PORT}"
+    success "Frontend config diupdate — API port: ${API_PORT} (nginx-aware)"
 }
 
 install_npm_deps() {
