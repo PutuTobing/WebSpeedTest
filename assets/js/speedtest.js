@@ -810,7 +810,7 @@ async function shareResult(item, btn) {
     }
 
     try {
-        const canvas = generateShareCard(item);
+        const canvas = await generateShareCard(item);
         const blob   = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         const file   = new File([blob], 'speedtest-result.png', { type: 'image/png' });
 
@@ -856,12 +856,19 @@ async function shareResult(item, btn) {
 
 // ── Share Card Canvas Generator (1200 × 630 — Open Graph ratio) ─────────────
 
-function generateShareCard(item) {
+async function generateShareCard(item) {
     const W = 1200, H = 630;
     const cv  = document.createElement('canvas');
     cv.width  = W;
     cv.height = H;
     const c = cv.getContext('2d');
+
+    // Ambil site config dari cache localStorage (sudah di-set oleh site-config.js)
+    let siteCfg = {};
+    try { siteCfg = JSON.parse(localStorage.getItem('site_config') || '{}'); } catch {}
+    const brandMain = (siteCfg.brandMain || 'WebSpeedTest').trim();
+    const brandSub  = (siteCfg.brandSub  || 'Network Speed Test').trim();
+    const logoUrl   = siteCfg.logoUrl || '';
 
     // ── Background ──────────────────────────────────────────────────────────
     const bg = c.createLinearGradient(0, 0, W, H);
@@ -900,32 +907,78 @@ function generateShareCard(item) {
     c.beginPath(); c.moveTo(0, 3); c.lineTo(W, 3); c.stroke();
 
     // ── Logo badge ───────────────────────────────────────────────────────────
-    const badgeG = c.createLinearGradient(52, 42, 82, 74);
-    badgeG.addColorStop(0, '#6366f1');
-    badgeG.addColorStop(1, '#06b6d4');
-    c.fillStyle = badgeG;
-    c.beginPath(); c.arc(67, 58, 16, 0, Math.PI * 2); c.fill();
+    // Coba load logo dari URL (dari site config), fallback ke lightning bolt
+    const LOGO_SIZE = 52;   // ukuran logo persegi yang digambar
+    const LOGO_X    = 52;
+    const LOGO_Y    = 34;
+    let logoLoaded  = false;
 
-    // Lightning bolt shape inside badge
-    c.fillStyle = 'rgba(255,255,255,0.92)';
-    c.beginPath();
-    c.moveTo(63, 47); c.lineTo(70, 59); c.lineTo(65, 59);
-    c.lineTo(71, 70); c.lineTo(60, 57); c.lineTo(65, 57);
-    c.closePath(); c.fill();
+    if (logoUrl) {
+        try {
+            const img = await new Promise((resolve, reject) => {
+                const im = new Image();
+                im.crossOrigin = 'anonymous';
+                im.onload  = () => resolve(im);
+                im.onerror = reject;
+                im.src = logoUrl;
+            });
+            // Clip ke lingkaran
+            c.save();
+            c.beginPath();
+            c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2);
+            c.clip();
+            c.drawImage(img, LOGO_X, LOGO_Y, LOGO_SIZE, LOGO_SIZE);
+            c.restore();
+            // Cincin tipis di sekeliling logo
+            c.strokeStyle = 'rgba(99,102,241,0.55)';
+            c.lineWidth   = 2;
+            c.beginPath();
+            c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2);
+            c.stroke();
+            logoLoaded = true;
+        } catch { /* gagal load logo — pakai fallback */ }
+    }
 
-    // "WebSpeedTest" brand text
+    if (!logoLoaded) {
+        // Fallback: lingkaran gradient dengan ikon petir
+        const badgeG = c.createLinearGradient(LOGO_X, LOGO_Y, LOGO_X + LOGO_SIZE, LOGO_Y + LOGO_SIZE);
+        badgeG.addColorStop(0, '#6366f1');
+        badgeG.addColorStop(1, '#06b6d4');
+        c.fillStyle = badgeG;
+        c.beginPath(); c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2); c.fill();
+        // Ikon petir
+        c.fillStyle = 'rgba(255,255,255,0.92)';
+        c.beginPath();
+        c.moveTo(LOGO_X + 19, LOGO_Y + 9);
+        c.lineTo(LOGO_X + 28, LOGO_Y + 25);
+        c.lineTo(LOGO_X + 23, LOGO_Y + 25);
+        c.lineTo(LOGO_X + 33, LOGO_Y + 43);
+        c.lineTo(LOGO_X + 18, LOGO_Y + 25);
+        c.lineTo(LOGO_X + 23, LOGO_Y + 25);
+        c.closePath(); c.fill();
+    }
+
+    const textX = LOGO_X + LOGO_SIZE + 16;
+
+    // Brand main (contoh: "SKY TECH")
     c.textAlign = 'left';
     c.font = 'bold 31px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
-    const brandG = c.createLinearGradient(92, 0, 360, 0);
-    brandG.addColorStop(0, '#818cf8');
-    brandG.addColorStop(1, '#22d3ee');
+    const brandG = c.createLinearGradient(textX, 0, textX + 420, 0);
+    brandG.addColorStop(0, '#ffffff');
+    brandG.addColorStop(1, '#c7d2fe');
     c.fillStyle = brandG;
-    c.fillText('WebSpeedTest', 92, 69);
+    c.fillText(brandMain, textX, 69);
 
-    // Tagline
+    // Brand sub (contoh: "PT. SKY Base Technologhy Digital")
     c.font = '500 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
-    c.fillStyle = 'rgba(255,255,255,0.32)';
-    c.fillText('Network Speed Test', 92, 91);
+    c.fillStyle = 'rgba(255,255,255,0.38)';
+    const brandSubDisp = brandSub.length > 52 ? brandSub.slice(0, 49) + '...' : brandSub;
+    c.fillText(brandSubDisp, textX, 91);
+
+    // Label "Network Speed Test" — kecil di bawah brandSub
+    c.font = '400 13px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(99,102,241,0.70)';
+    c.fillText('Network Speed Test', textX, 108);
 
     // Date/time — right aligned
     c.font = '500 19px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
@@ -936,7 +989,7 @@ function generateShareCard(item) {
 
     // Header divider
     c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(56, 110); c.lineTo(W - 56, 110); c.stroke();
+    c.beginPath(); c.moveTo(56, 126); c.lineTo(W - 56, 126); c.stroke();
 
     // ── Download & Upload blocks ─────────────────────────────────────────────
     const dlVal = item.download != null ? String(item.download) : '—';
@@ -948,7 +1001,7 @@ function generateShareCard(item) {
     // Vertical dashed divider between DL and UL
     c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
     c.setLineDash([5, 8]);
-    c.beginPath(); c.moveTo(W / 2, 120); c.lineTo(W / 2, 418); c.stroke();
+    c.beginPath(); c.moveTo(W / 2, 136); c.lineTo(W / 2, 430); c.stroke();
     c.setLineDash([]);
 
     // ── Ping & Jitter pills ──────────────────────────────────────────────────
@@ -978,7 +1031,7 @@ function generateShareCard(item) {
     c.font = '400 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = 'rgba(255,255,255,0.22)';
     c.textAlign = 'right';
-    c.fillText('Dibuat dengan WebSpeedTest', W - 60, 584);
+    c.fillText('Dibuat dengan ' + brandMain, W - 60, 584);
     c.textAlign = 'left';
 
     return cv;
