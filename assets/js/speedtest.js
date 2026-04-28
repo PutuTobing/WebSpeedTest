@@ -849,7 +849,22 @@ async function shareResult(item, btn) {
             return;
         }
     } catch (e) {
-        if (e.name !== 'AbortError') console.error('Share error:', e);
+        if (e.name !== 'AbortError') {
+            console.error('Share error:', e);
+            // Tunjukkan error di tombol agar user tahu apa yang terjadi
+            if (btn) {
+                btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="ssbtn-txt">Gagal</span>';
+                btn.style.color = '#f87171';
+                btn.style.borderColor = 'rgba(248,113,113,0.4)';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                    btn.disabled = false;
+                }, 2500);
+                return;
+            }
+        }
     }
     if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
 }
@@ -920,6 +935,7 @@ async function generateShareCard(item) {
             const proxyUrl = `${window.API_URL || 'http://localhost:3001'}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
+                im.crossOrigin = 'anonymous'; // wajib agar canvas tidak tainted
                 im.onload  = () => resolve(im);
                 im.onerror = reject;
                 im.src = proxyUrl;
