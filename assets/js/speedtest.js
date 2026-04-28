@@ -921,105 +921,118 @@ async function generateShareCard(item) {
     c.strokeStyle = tl; c.lineWidth = 3;
     c.beginPath(); c.moveTo(0, 3); c.lineTo(W, 3); c.stroke();
 
-    // ── Logo badge ───────────────────────────────────────────────────────────
-    // Coba load logo dari URL (dari site config), fallback ke lightning bolt
-    const LOGO_SIZE = 52;   // ukuran logo persegi yang digambar
-    const LOGO_X    = 52;
-    const LOGO_Y    = 34;
+    // ── Navbar-style brand header panel ─────────────────────────────────────
+    // Panel gelap semi-transparan dengan tinggi seperti navbar — persis seperti
+    // tampilan navbar di halaman (logo kiri, nama perusahaan, subtitle kecil)
+    const PANEL_H = 88;
+    const panelBg = c.createLinearGradient(0, 0, W * 0.6, 0);
+    panelBg.addColorStop(0,    'rgba(10,10,30,0.96)');
+    panelBg.addColorStop(0.55, 'rgba(15,15,38,0.88)');
+    panelBg.addColorStop(1,    'rgba(15,15,38,0.0)');
+    c.fillStyle = panelBg;
+    _scRR(c, 8, 8, W - 16, PANEL_H, 10);
+    c.fill();
+
+    // Garis accent tipis di bawah panel (seperti border-bottom navbar)
+    const panelLine = c.createLinearGradient(0, 0, W, 0);
+    panelLine.addColorStop(0,   'rgba(99,102,241,0)');
+    panelLine.addColorStop(0.15,'rgba(99,102,241,0.7)');
+    panelLine.addColorStop(0.5, 'rgba(168,85,247,0.5)');
+    panelLine.addColorStop(0.85,'rgba(6,182,212,0.7)');
+    panelLine.addColorStop(1,   'rgba(6,182,212,0)');
+    c.strokeStyle = panelLine; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(8, 8 + PANEL_H); c.lineTo(W - 8, 8 + PANEL_H); c.stroke();
+
+    // ── Logo di dalam panel ───────────────────────────────────────────────────
+    const LOGO_SIZE = 54;
+    const LOGO_X    = 32;
+    const LOGO_CX   = LOGO_X + LOGO_SIZE / 2;
+    const LOGO_CY   = 8 + PANEL_H / 2;      // vertikal center di dalam panel
     let logoLoaded  = false;
 
     if (logoUrl) {
         try {
-            // Load logo lewat proxy backend agar tidak terkena CORS restriction
-            // (server eksternal tidak mengembalikan Access-Control-Allow-Origin)
             const proxyUrl = `${window.API_URL || 'http://localhost:3001'}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
-                im.crossOrigin = 'anonymous'; // wajib agar canvas tidak tainted
+                im.crossOrigin = 'anonymous';
                 im.onload  = () => resolve(im);
                 im.onerror = reject;
                 im.src = proxyUrl;
             });
-            // Clip ke lingkaran
             c.save();
             c.beginPath();
-            c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2);
+            c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2);
             c.clip();
-            c.drawImage(img, LOGO_X, LOGO_Y, LOGO_SIZE, LOGO_SIZE);
+            c.drawImage(img, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
             c.restore();
-            // Cincin tipis di sekeliling logo
-            c.strokeStyle = 'rgba(99,102,241,0.55)';
-            c.lineWidth   = 2;
-            c.beginPath();
-            c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2);
-            c.stroke();
+            // Cincin tipis accent
+            c.strokeStyle = 'rgba(99,102,241,0.5)';
+            c.lineWidth   = 1.5;
+            c.beginPath(); c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2); c.stroke();
             logoLoaded = true;
-        } catch { /* gagal load logo — pakai fallback */ }
+        } catch { /* fallback */ }
     }
 
     if (!logoLoaded) {
-        // Fallback: lingkaran gradient dengan ikon petir
-        const badgeG = c.createLinearGradient(LOGO_X, LOGO_Y, LOGO_X + LOGO_SIZE, LOGO_Y + LOGO_SIZE);
+        // Fallback lingkaran gradient + ikon petir
+        const badgeG = c.createLinearGradient(LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_X + LOGO_SIZE, LOGO_CY + LOGO_SIZE / 2);
         badgeG.addColorStop(0, '#6366f1');
         badgeG.addColorStop(1, '#06b6d4');
         c.fillStyle = badgeG;
-        c.beginPath(); c.arc(LOGO_X + LOGO_SIZE / 2, LOGO_Y + LOGO_SIZE / 2, LOGO_SIZE / 2, 0, Math.PI * 2); c.fill();
-        // Ikon petir
+        c.beginPath(); c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2); c.fill();
         c.fillStyle = 'rgba(255,255,255,0.92)';
         c.beginPath();
-        c.moveTo(LOGO_X + 19, LOGO_Y + 9);
-        c.lineTo(LOGO_X + 28, LOGO_Y + 25);
-        c.lineTo(LOGO_X + 23, LOGO_Y + 25);
-        c.lineTo(LOGO_X + 33, LOGO_Y + 43);
-        c.lineTo(LOGO_X + 18, LOGO_Y + 25);
-        c.lineTo(LOGO_X + 23, LOGO_Y + 25);
+        const bx = LOGO_CX - 8, by = LOGO_CY - 15;
+        c.moveTo(bx + 5, by); c.lineTo(bx + 13, by + 16); c.lineTo(bx + 9, by + 16);
+        c.lineTo(bx + 16, by + 30); c.lineTo(bx + 2, by + 14); c.lineTo(bx + 7, by + 14);
         c.closePath(); c.fill();
     }
 
-    const textX = LOGO_X + LOGO_SIZE + 16;
+    // ── Teks brand di kanan logo ─────────────────────────────────────────────
+    const textX = LOGO_X + LOGO_SIZE + 20;
 
-    // Brand main (contoh: "SKY TECH")
+    // Nama perusahaan — besar & bold (contoh: "SKY TECH")
     c.textAlign = 'left';
-    c.font = 'bold 31px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
-    const brandG = c.createLinearGradient(textX, 0, textX + 420, 0);
-    brandG.addColorStop(0, '#ffffff');
-    brandG.addColorStop(1, '#c7d2fe');
-    c.fillStyle = brandG;
-    c.fillText(brandMain, textX, 69);
+    c.font = 'bold 36px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = '#ffffff';
+    c.fillText(brandMain, textX, LOGO_CY - 4);
 
-    // Brand sub (contoh: "PT. SKY Base Technologhy Digital")
-    c.font = '500 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
-    c.fillStyle = 'rgba(255,255,255,0.38)';
-    const brandSubDisp = brandSub.length > 52 ? brandSub.slice(0, 49) + '...' : brandSub;
-    c.fillText(brandSubDisp, textX, 91);
+    // Subtitle — nama lengkap perusahaan (contoh: "PT. SKY Base Technologhy Digital")
+    c.font = '400 17px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.45)';
+    const brandSubDisp = brandSub.length > 55 ? brandSub.slice(0, 52) + '...' : brandSub;
+    c.fillText(brandSubDisp, textX, LOGO_CY + 22);
 
-    // Label "Network Speed Test" — kecil di bawah brandSub
+    // ── Tanggal/waktu di kanan panel ─────────────────────────────────────────
+    c.font = '500 18px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.45)';
+    c.textAlign = 'right';
+    c.fillText(item.displayTs || '', W - 32, LOGO_CY - 4);
+    // Label kecil di bawah tanggal
     c.font = '400 13px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
-    c.fillStyle = 'rgba(99,102,241,0.70)';
-    c.fillText('Network Speed Test', textX, 108);
+    c.fillStyle = 'rgba(99,102,241,0.75)';
+    c.fillText('Network Speed Test', W - 32, LOGO_CY + 22);
+    c.textAlign = 'left';
+
+    // Divider di bawah panel
+    const PANEL_BOTTOM = 8 + PANEL_H + 12; // sedikit space sebelum konten
 
     // Date/time — right aligned
     c.font = '500 19px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = 'rgba(255,255,255,0.46)';
     c.textAlign = 'right';
-    c.fillText(item.displayTs || '', W - 60, 69);
-    c.textAlign = 'left';
-
-    // Header divider
-    c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(56, 126); c.lineTo(W - 56, 126); c.stroke();
-
     // ── Download & Upload blocks ─────────────────────────────────────────────
     const dlVal = item.download != null ? String(item.download) : '—';
     const ulVal = item.upload   != null ? String(item.upload)   : '—';
 
-    _scSpeedBlock(c, 300, dlVal, '\u2193', 'UNDUHAN',  '#22d3ee', '#0891b2');
-    _scSpeedBlock(c, 900, ulVal, '\u2191', 'UNGGAHAN', '#818cf8', '#4f46e5');
+    _scSpeedBlock(c, 300, dlVal, '\u2193', 'UNDUHAN',  '#22d3ee', '#0891b2', PANEL_BOTTOM);
+    _scSpeedBlock(c, 900, ulVal, '\u2191', 'UNGGAHAN', '#818cf8', '#4f46e5', PANEL_BOTTOM);
 
     // Vertical dashed divider between DL and UL
     c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
     c.setLineDash([5, 8]);
-    c.beginPath(); c.moveTo(W / 2, 136); c.lineTo(W / 2, 430); c.stroke();
+    c.beginPath(); c.moveTo(W / 2, PANEL_BOTTOM); c.lineTo(W / 2, PANEL_BOTTOM + 300); c.stroke();
     c.setLineDash([]);
 
     // ── Ping & Jitter pills ──────────────────────────────────────────────────
@@ -1028,10 +1041,10 @@ async function generateShareCard(item) {
 
     const pW = 216, pH = 84, pGap = 28;
     const pStart = (W - (pW * 2 + pGap)) / 2;
-    const pY = 428;
+    const pY = PANEL_BOTTOM + 310;
 
-    _scPill(c, pStart,          pY, pW, pH, 'PING',   pingVal, 'ms', '#f59e0b', 'rgba(245,158,11,0.10)');
-    _scPill(c, pStart + pW + pGap, pY, pW, pH, 'JITTER', jitVal,  'ms', '#fbbf24', 'rgba(251,191,36,0.08)');
+    _scPill(c, pStart,               pY, pW, pH, 'PING',   pingVal, 'ms', '#f59e0b', 'rgba(245,158,11,0.10)');
+    _scPill(c, pStart + pW + pGap,   pY, pW, pH, 'JITTER', jitVal,  'ms', '#fbbf24', 'rgba(251,191,36,0.08)');
 
     // ── Footer ───────────────────────────────────────────────────────────────
     c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
@@ -1056,30 +1069,31 @@ async function generateShareCard(item) {
 }
 
 // ── Canvas helper: draw speed block (Download or Upload) ────────────────────
-function _scSpeedBlock(c, cx, value, arrow, label, colorA, colorB) {
+// offsetY = posisi top area konten (setelah header panel)
+function _scSpeedBlock(c, cx, value, arrow, label, colorA, colorB, offsetY = 118) {
     c.textAlign = 'center';
 
     // Arrow ↓ or ↑
     c.font = 'bold 54px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = colorA;
-    c.fillText(arrow, cx, 178);
+    c.fillText(arrow, cx, offsetY + 56);
 
     // Big speed number — gradient
     c.font = 'bold 86px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     const vg = c.createLinearGradient(cx - 220, 0, cx + 220, 0);
     vg.addColorStop(0, colorB); vg.addColorStop(1, colorA);
     c.fillStyle = vg;
-    c.fillText(value, cx, 300);
+    c.fillText(value, cx, offsetY + 178);
 
     // "Mbps" unit
     c.font = '600 26px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = 'rgba(255,255,255,0.42)';
-    c.fillText('Mbps', cx, 338);
+    c.fillText('Mbps', cx, offsetY + 218);
 
     // Label (UNDUHAN / UNGGAHAN)
     c.font = '700 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = colorA;
-    c.fillText(label, cx, 394);
+    c.fillText(label, cx, offsetY + 275);
 
     c.textAlign = 'left';
 }
