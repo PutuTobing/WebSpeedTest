@@ -66,6 +66,22 @@ function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
         .finally(() => clearTimeout(timeoutId));
 }
 
+// Helper: Tampilkan custom error modal (menggantikan browser alert())
+function showErrorModal(title, body) {
+    const modal   = document.getElementById('st-error-modal');
+    const titleEl = document.getElementById('st-err-title');
+    const bodyEl  = document.getElementById('st-err-body');
+    if (!modal) { alert(`${title}\n\n${body}`); return; } // fallback
+    // Strip emoji untuk judul yang lebih bersih di modal
+    titleEl.textContent = title.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}⚠️❌🌐⏱️]\s*/u, '');
+    bodyEl.textContent  = body;
+    modal.style.display = 'flex';
+    // Tutup jika klik backdrop
+    modal.querySelector('.st-err-backdrop').onclick = () => { modal.style.display = 'none'; };
+    // Fokus tombol OK untuk aksesibilitas keyboard
+    setTimeout(() => { const btn = document.getElementById('st-err-ok'); if (btn) btn.focus(); }, 50);
+}
+
 // Helper: Tampilkan error notification yang user-friendly
 function showTestError(phase, errorType, serverName) {
     let message = '';
@@ -93,9 +109,9 @@ function showTestError(phase, errorType, serverName) {
     // Tampilkan gauge error state
     setGaugeDisplay('ERROR', '!', '', '#ef4444');
     
-    // Show alert dengan detail
+    // Tampilkan custom modal
     setTimeout(() => {
-        alert(`${message}\n\n${suggestion}`);
+        showErrorModal(message, suggestion);
     }, 500);
     
     console.error(`[SpeedTest ${phase}] ${errorType}:`, { server: serverName });

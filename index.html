@@ -76,6 +76,23 @@
     <!-- Mobile overlay — juga di luar scroll container -->
     <div class="nav-overlay" id="nav-overlay"></div>
 
+    <!-- ── Custom Error Modal ─────────────────────────────────────────── -->
+    <div id="st-error-modal" role="dialog" aria-modal="true" aria-labelledby="st-err-title" style="display:none">
+        <div class="st-err-backdrop"></div>
+        <div class="st-err-box">
+            <div class="st-err-icon-wrap">
+                <svg class="st-err-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="13"/>
+                    <circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="none"/>
+                </svg>
+            </div>
+            <h3 class="st-err-title" id="st-err-title"></h3>
+            <p  class="st-err-body"  id="st-err-body"></p>
+            <button class="st-err-btn" id="st-err-ok" onclick="document.getElementById('st-error-modal').style.display='none'">OK</button>
+        </div>
+    </div>
+
     <!-- Scroll wrapper — canvas & navbar berada di luar -->
     <div class="page-scroll">
 
