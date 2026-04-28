@@ -9,7 +9,8 @@ const CONFIG = {
     UPLOAD_CONNECTIONS: 10,
     DOWNLOAD_DURATION: 10, // seconds
     UPLOAD_DURATION: 10,   // seconds
-    PING_COUNT: 8,         // more samples for accurate median/jitter
+    PING_COUNT: 20,        // lebih banyak sampel untuk akurasi minimum
+    PING_INTERVAL: 50,     // ms antar paket — cukup pendek agar koneksi tetap hangat
     MAX_HISTORY: 10,
     // Timeout settings (dalam milliseconds)
     PING_TIMEOUT: 5000,    // 5 detik per ping packet
@@ -185,112 +186,106 @@ async function testPing() {
     document.querySelector('.metric-card.ping')?.classList.add('testing');
     setGaugeDisplay('PING', null, 'ms', null);
 
-    // ── Warmup: buka koneksi TCP tanpa dihitung ke hasil ─────────────────────
-    // Paket warmup memastikan TCP handshake selesai sebelum pengukuran,
-    // sehingga RTT yang diukur adalah latency murni, bukan setup overhead.
-    try {
-        await fetchWithTimeout(`${currentServer}/ping`, {
-            method: 'POST',
-            body: new Uint8Array(64),   // 64-byte payload (setara ICMP echo)
-            cache: 'no-store',
-            headers: { 'Content-Type': 'application/octet-stream' }
-        }, CONFIG.PING_TIMEOUT);
-    } catch (e) {
-        // Warmup error - cek apakah server tidak merespon sama sekali
-        if (e.name === 'AbortError') {
-            const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
-            showTestError('Ping Warmup', 'timeout', serverName);
-            throw e; // Stop test
+    // ── Warmup: 3 paket GET untuk pastikan koneksi TCP sudah terbuka ──────────
+    // GET tidak punya request body sehingga server langsung membalas "pong"
+    // tanpa membaca/parsing body → overhead minimum, mendekati ICMP ping.
+    for (let w = 0; w < 3; w++) {
+        try {
+            const wr = await fetchWithTimeout(`${currentServer}/ping`, {
+                method: 'GET',
+                cache: 'no-store'
+            }, CONFIG.PING_TIMEOUT);
+            await wr.text();
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
+                showTestError('Ping Warmup', 'timeout', serverName);
+                throw e;
+            }
+            // Error non-timeout di warmup diabaikan
         }
-        // Error lain di warmup diabaikan
     }
 
-    // ── Paket ping: 64 byte tetap (mirip ICMP echo request) ──────────────────
-    // Menggunakan POST agar server membaca paket secara penuh sebelum membalas.
-    // Ini mengukur RTT bidirectional (client→server→client) yang sesungguhnya.
-    const pingPacket = new Uint8Array(64);
-    // Isi dengan pola tetap (bukan random) agar tidak ada overhead CSPRNG
-    for (let b = 0; b < 64; b++) pingPacket[b] = b & 0xff;
-
+    // ── Pengukuran: PING_COUNT paket GET dengan interval pendek ──────────────
+    //
+    // Mengapa GET (bukan POST):
+    //   POST mengharuskan server membaca seluruh request body sebelum membalas.
+    //   GET tidak punya body → server membalas "pong" seketika → overhead lebih
+    //   kecil dan hasil lebih mendekati ICMP ping dari CMD/terminal.
+    //
+    // Mengapa MINIMUM (bukan median/rata-rata):
+    //   Nilai minimum RTT = latensi jaringan murni.
+    //   Nilai yang lebih besar dari minimum disebabkan oleh variabilitas
+    //   server (GC pause, context switch) bukan kondisi jaringan.
+    //   ICMP ping di CMD juga menampilkan nilai minimum sebagai acuan.
+    //
+    // Mengapa interval 50ms (bukan 300ms):
+    //   Interval pendek menjaga koneksi tetap hangat (tidak perlu re-handshake)
+    //   dan menghasilkan 20 sampel dalam ~1 detik.
     const pingTimes = [];
 
     for (let i = 0; i < CONFIG.PING_COUNT; i++) {
         const controller = new AbortController();
         abortControllers.push(controller);
 
-        updateProgress(10 + i * 2, `Mengirim paket ${i + 1}/${CONFIG.PING_COUNT}...`);
+        const progress = 10 + Math.round(i * (15 / CONFIG.PING_COUNT));
+        updateProgress(progress, `Ping ${i + 1}/${CONFIG.PING_COUNT}...`);
 
-        const startTime = performance.now();
+        const t0 = performance.now();
 
         try {
-            // Kirim paket kecil → server baca penuh → server balas JSON
-            // Waktu diukur dari byte pertama dikirim sampai byte terakhir diterima
             const resp = await fetchWithTimeout(`${currentServer}/ping`, {
-                method: 'POST',
-                body: pingPacket,
+                method: 'GET',
                 cache: 'no-store',
-                signal: controller.signal,
-                headers: { 'Content-Type': 'application/octet-stream' }
+                signal: controller.signal
             }, CONFIG.PING_TIMEOUT);
-            
-            if (!resp.ok) {
-                throw new Error(`Server error: ${resp.status}`);
-            }
-            
-            await resp.text(); // tunggu body balasan tiba sepenuhnya (server mengembalikan text/plain "pong")
 
-            const endTime = performance.now();
-            const latency = parseFloat((endTime - startTime).toFixed(1));
-            pingTimes.push(latency);
+            if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+            await resp.text();
 
+            const rtt = parseFloat((performance.now() - t0).toFixed(1));
+            pingTimes.push(rtt);
+
+            // Tampilkan minimum berjalan agar user melihat angka terendah
+            const currentMin = Math.round(Math.min(...pingTimes));
             updateProgress(
-                10 + (i + 1) * 2,
-                `Paket ${i + 1}/${CONFIG.PING_COUNT} → balasan diterima: ${Math.round(latency)} ms`
+                10 + Math.round((i + 1) * (15 / CONFIG.PING_COUNT)),
+                `Ping ${i + 1}/${CONFIG.PING_COUNT}: ${Math.round(rtt)} ms  (min: ${currentMin} ms)`
             );
-            setGaugeDisplay('PING', Math.round(latency), 'ms', '#a78bfa');
-            await new Promise(r => setTimeout(r, 300));
+            setGaugeDisplay('PING', currentMin, 'ms', '#a78bfa');
 
         } catch (error) {
             if (error.name === 'AbortError') {
-                // Timeout atau manual stop
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
-                
-                // Cek apakah ini timeout atau manual abort
-                if (abortControllers.length > 0 && !isTestRunning) {
-                    // Manual stop - jangan tampilkan error
-                    throw error;
-                } else {
-                    // Timeout
-                    showTestError('Ping', 'timeout', serverName);
-                    throw error;
-                }
+                if (!isTestRunning) throw error; // manual stop
+                showTestError('Ping', 'timeout', serverName);
+                throw error;
             }
-            
-            // Network error atau server error
-            if (error.message.includes('Server error')) {
+            if (error.message?.includes('Server error')) {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
                 showTestError('Ping', 'server-error', serverName);
                 throw error;
             }
-            
-            console.error('Ping error:', error);
-            
-            // Jika lebih dari setengah packet gagal, hentikan test
-            if (i > CONFIG.PING_COUNT / 2 && pingTimes.length === 0) {
+            console.warn(`Ping packet ${i + 1} failed:`, error.message);
+            if (i >= Math.floor(CONFIG.PING_COUNT / 2) && pingTimes.length === 0) {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
                 showTestError('Ping', 'network', serverName);
                 throw error;
             }
         }
+
+        // Interval antar paket — pendek agar koneksi tetap hangat
+        if (i < CONFIG.PING_COUNT - 1) {
+            await new Promise(r => setTimeout(r, CONFIG.PING_INTERVAL));
+        }
     }
 
-    // Median ping (more robust than average against outliers)
-    const sorted = [...pingTimes].sort((a, b) => a - b);
-    const medianPing = sorted.length > 0
-        ? Math.round(sorted[Math.floor(sorted.length / 2)])
-        : 0;
+    // Ping = RTT minimum dari semua sampel (mencerminkan latensi jaringan murni,
+    // sama seperti yang ditampilkan oleh perintah ping di CMD/terminal).
+    const minPing = Math.round(Math.min(...pingTimes));
 
-    // Jitter = mean of absolute consecutive differences (matches Ookla method)
+    // Jitter = rata-rata selisih absolut antar paket berurutan (metode Ookla).
+    // Mengukur variabilitas/ketidakstabilan latensi, bukan besarnya latency.
     const jitter = pingTimes.length > 1
         ? Math.round(
             pingTimes.slice(1).reduce((sum, t, i) => sum + Math.abs(t - pingTimes[i]), 0)
@@ -298,14 +293,12 @@ async function testPing() {
           )
         : 0;
 
-    pingResult.textContent = medianPing;
+    pingResult.textContent = minPing;
     if (jitterResult) jitterResult.textContent = jitter;
 
-    // Show final ping result for 1.5s
-    setGaugeDisplay('PING', medianPing, 'ms', '#a78bfa');
+    setGaugeDisplay('PING', minPing, 'ms', '#a78bfa');
     await new Promise(r => setTimeout(r, 1500));
 
-    // Show jitter for 1.5s
     setGaugeDisplay('JITTER', jitter, 'ms', '#f472b6');
     await new Promise(r => setTimeout(r, 1500));
 
