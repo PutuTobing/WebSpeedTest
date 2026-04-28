@@ -1158,6 +1158,13 @@
                 if (autoHint) autoHint.textContent = `✓ Dipilih otomatis: ${best.ep.name || best.ep.label} (${best.latency} ms)`;
                 setTimeout(() => { if (autoHint) autoHint.textContent = ''; }, 5000);
             } else {
+                // Tidak ada server yang bisa dihubungi, tetap pilih yang pertama
+                // agar jarak dan info server tetap tampil
+                const firstEp = endpoints[0];
+                if (firstEp) {
+                    serverSelect.value = firstEp.value;
+                    serverSelect.dispatchEvent(new Event('change'));
+                }
                 if (autoHint) autoHint.textContent = '';
             }
         }
@@ -1179,8 +1186,21 @@
                 || host === '::1';
         }
 
+        // Geolocate an IP via backend proxy (avoids browser-side 403 / CORS / mixed-content)
+        async function _backendGeolocate(ip) {
+            const apiBase = window.API_URL || 'http://localhost:3001';
+            const url = `${apiBase}/api/geolocate?ip=${encodeURIComponent(ip)}`;
+            const r = await fetch(url, { cache: 'no-store' });
+            if (!r.ok) throw new Error(`geolocate ${r.status}`);
+            const d = await r.json();
+            if (d.isPrivate) return null;               // private IP
+            if (d.status !== 'success') return null;    // ip-api fail
+            return { lat: d.lat, lon: d.lon };
+        }
+
         async function _getUserCoords() {
             if (_userCoords) return _userCoords;
+            // 1. Browser geolocation API
             try {
                 _userCoords = await new Promise((res, rej) => {
                     if (!navigator.geolocation) return rej();
@@ -1191,10 +1211,14 @@
                 });
                 return _userCoords;
             } catch {}
-            // Fallback: IP-based geolocation
+            // 2. Backend proxy geolocation (avoids browser-side 403 from ip-api)
             try {
-                const d = await (await fetch('https://ip-api.com/json/?fields=status,lat,lon')).json();
-                if (d.status === 'success') { _userCoords = { lat: d.lat, lon: d.lon }; return _userCoords; }
+                const apiBase = window.API_URL || 'http://localhost:3001';
+                const d = await (await fetch(`${apiBase}/api/geolocate?ip=client`, { cache: 'no-store' })).json();
+                if (d.status === 'success' && d.lat != null) {
+                    _userCoords = { lat: d.lat, lon: d.lon };
+                    return _userCoords;
+                }
             } catch {}
             return null;
         }
@@ -1203,11 +1227,11 @@
             try {
                 const host = new URL(serverUrl).hostname;
                 if (_isPrivate(host)) return { text: 'Lokal / LAN', cls: 'sc-online' };
-                // Get server geo (cached)
+                // Get server geo via backend proxy (cached)
                 if (!_svrGeoCache.has(host)) {
                     try {
-                        const d = await (await fetch(`https://ip-api.com/json/${host}?fields=status,lat,lon`)).json();
-                        _svrGeoCache.set(host, d.status === 'success' ? { lat: d.lat, lon: d.lon } : null);
+                        const coords = await _backendGeolocate(host);
+                        _svrGeoCache.set(host, coords);
                     } catch { _svrGeoCache.set(host, null); }
                 }
                 const sCoords = _svrGeoCache.get(host);
