@@ -960,32 +960,19 @@ async function generateShareCard(item) {
                 im.onerror = reject;
                 im.src = proxyUrl;
             });
-            c.save();
-            c.beginPath();
-            c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2);
-            c.clip();
+            // Gambar logo langsung tanpa clip/cincin — tampil penuh apa adanya
             c.drawImage(img, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
-            c.restore();
-            // Cincin tipis accent
-            c.strokeStyle = 'rgba(99,102,241,0.5)';
-            c.lineWidth   = 1.5;
-            c.beginPath(); c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2); c.stroke();
             logoLoaded = true;
         } catch { /* fallback */ }
     }
 
     if (!logoLoaded) {
-        // Fallback lingkaran gradient + ikon petir
-        const badgeG = c.createLinearGradient(LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_X + LOGO_SIZE, LOGO_CY + LOGO_SIZE / 2);
-        badgeG.addColorStop(0, '#6366f1');
-        badgeG.addColorStop(1, '#06b6d4');
-        c.fillStyle = badgeG;
-        c.beginPath(); c.arc(LOGO_CX, LOGO_CY, LOGO_SIZE / 2, 0, Math.PI * 2); c.fill();
-        c.fillStyle = 'rgba(255,255,255,0.92)';
+        // Fallback: ikon petir sederhana (tanpa lingkaran background)
+        c.fillStyle = 'rgba(255,255,255,0.90)';
         c.beginPath();
-        const bx = LOGO_CX - 8, by = LOGO_CY - 15;
-        c.moveTo(bx + 5, by); c.lineTo(bx + 13, by + 16); c.lineTo(bx + 9, by + 16);
-        c.lineTo(bx + 16, by + 30); c.lineTo(bx + 2, by + 14); c.lineTo(bx + 7, by + 14);
+        const bx = LOGO_X, by = LOGO_CY - LOGO_SIZE / 2;
+        c.moveTo(bx + 24, by + 2); c.lineTo(bx + 36, by + 26); c.lineTo(bx + 30, by + 26);
+        c.lineTo(bx + 38, by + 52); c.lineTo(bx + 18, by + 28); c.lineTo(bx + 26, by + 28);
         c.closePath(); c.fill();
     }
 
