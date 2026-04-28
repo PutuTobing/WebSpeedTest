@@ -237,7 +237,7 @@ async function testPing() {
                 throw new Error(`Server error: ${resp.status}`);
             }
             
-            await resp.json(); // tunggu body balasan tiba sepenuhnya
+            await resp.text(); // tunggu body balasan tiba sepenuhnya (server mengembalikan text/plain "pong")
 
             const endTime = performance.now();
             const latency = parseFloat((endTime - startTime).toFixed(1));
