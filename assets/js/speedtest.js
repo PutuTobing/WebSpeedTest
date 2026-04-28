@@ -699,6 +699,7 @@ async function loadHistory() {
                            ${displayUser}
                        </span>`
                     : '';
+                const _sd = btoa(unescape(encodeURIComponent(JSON.stringify({displayName:srvName,displayTs:ts,ping:item.ping,jitter:item.jitter,download:item.download,upload:item.upload}))));
                 return `<div class="shi">
                     <div class="shi-header">
                         <div class="shi-hdr-server">
@@ -706,9 +707,15 @@ async function loadHistory() {
                             <span class="shi-hdr-name">${srvName}</span>
                             ${userBadge}
                         </div>
-                        <div class="shi-hdr-time">
-                            <span class="shi-hdr-lbl">Tanggal / Waktu</span>
-                            <span class="shi-hdr-ts">${ts}</span>
+                        <div class="shi-hdr-meta">
+                            <div class="shi-hdr-time">
+                                <span class="shi-hdr-lbl">Tanggal / Waktu</span>
+                                <span class="shi-hdr-ts">${ts}</span>
+                            </div>
+                            <button class="shi-share-btn" data-result="${_sd}" onclick="shareResultFromBtn(this)" title="Bagikan ke sosial media">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                <span class="ssbtn-txt">Bagikan</span>
+                            </button>
                         </div>
                     </div>
                     <div class="shi-blocks">
@@ -743,15 +750,22 @@ async function loadHistory() {
         historyContainer.innerHTML = history.map(item => {
             const srvName = resolveServerName(item.server, item.serverName);
             const ts      = item.timestamp || '';
+            const _sd = btoa(unescape(encodeURIComponent(JSON.stringify({displayName:srvName,displayTs:ts,ping:item.ping,jitter:item.jitter,download:item.download,upload:item.upload}))));
             return `<div class="shi">
                 <div class="shi-header">
                     <div class="shi-hdr-server">
                         <span class="shi-hdr-lbl">Server</span>
                         <span class="shi-hdr-name">${srvName}</span>
                     </div>
-                    <div class="shi-hdr-time">
-                        <span class="shi-hdr-lbl">Tanggal / Waktu</span>
-                        <span class="shi-hdr-ts">${ts}</span>
+                    <div class="shi-hdr-meta">
+                        <div class="shi-hdr-time">
+                            <span class="shi-hdr-lbl">Tanggal / Waktu</span>
+                            <span class="shi-hdr-ts">${ts}</span>
+                        </div>
+                        <button class="shi-share-btn" data-result="${_sd}" onclick="shareResultFromBtn(this)" title="Bagikan ke sosial media">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                            <span class="ssbtn-txt">Bagikan</span>
+                        </button>
                     </div>
                 </div>
                 <div class="shi-blocks">
@@ -778,4 +792,268 @@ async function loadHistory() {
         localStorage.removeItem('speedtest_history');
         historyContainer.innerHTML = '<p class="no-history">Belum ada riwayat test</p>';
     }
+}
+
+// ── Share Functionality ──────────────────────────────────────────────────────
+
+function shareResultFromBtn(btn) {
+    const item = JSON.parse(decodeURIComponent(escape(atob(btn.dataset.result))));
+    shareResult(item, btn);
+}
+
+async function shareResult(item, btn) {
+    // Visual feedback on button
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="ssbtn-txt">Membuat…</span>';
+    }
+
+    try {
+        const canvas = generateShareCard(item);
+        const blob   = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const file   = new File([blob], 'speedtest-result.png', { type: 'image/png' });
+
+        const dl   = item.download != null ? item.download : '—';
+        const ul   = item.upload   != null ? item.upload   : '—';
+        const ping = item.ping     != null ? item.ping     : '—';
+        const jit  = item.jitter   != null ? item.jitter   : '—';
+        const srv  = item.displayName || '—';
+        const shareText = `Hasil Speed Test Internet saya:\n` +
+            `\u2193 Unduhan : ${dl} Mbps\n` +
+            `\u2191 Unggahan: ${ul} Mbps\n` +
+            `\u23f1 Ping    : ${ping} ms  |  Jitter: ${jit} ms\n` +
+            `Server   : ${srv}`;
+
+        // Mobile / Safari 15+: share with image file
+        const shareWithFile = { title: 'Hasil Speed Test', text: shareText, files: [file] };
+        if (navigator.share && navigator.canShare && navigator.canShare(shareWithFile)) {
+            await navigator.share(shareWithFile);
+            return;
+        }
+        // Browsers that support share but not file (text share fallback)
+        if (navigator.share) {
+            await navigator.share({ title: 'Hasil Speed Test', text: shareText });
+            return;
+        }
+        // Desktop fallback: download PNG
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = `speedtest-${Date.now()}.png`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        if (btn) {
+            btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="ssbtn-txt">Tersimpan!</span>';
+            setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2000);
+            return;
+        }
+    } catch (e) {
+        if (e.name !== 'AbortError') console.error('Share error:', e);
+    }
+    if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+}
+
+// ── Share Card Canvas Generator (1200 × 630 — Open Graph ratio) ─────────────
+
+function generateShareCard(item) {
+    const W = 1200, H = 630;
+    const cv  = document.createElement('canvas');
+    cv.width  = W;
+    cv.height = H;
+    const c = cv.getContext('2d');
+
+    // ── Background ──────────────────────────────────────────────────────────
+    const bg = c.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0,   '#07071c');
+    bg.addColorStop(0.5, '#0d0d26');
+    bg.addColorStop(1,   '#060618');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Glow blobs
+    _scGlow(c, W, H,  220,  180, 380, 'rgba(99,102,241,0.20)');
+    _scGlow(c, W, H, 1010,  490, 340, 'rgba(6,182,212,0.16)');
+    _scGlow(c, W, H,  600,   90, 260, 'rgba(168,85,247,0.10)');
+
+    // Dot grid
+    c.fillStyle = 'rgba(255,255,255,0.022)';
+    for (let gx = 30; gx < W; gx += 52) {
+        for (let gy = 30; gy < H; gy += 52) {
+            c.beginPath(); c.arc(gx, gy, 1.2, 0, Math.PI * 2); c.fill();
+        }
+    }
+
+    // ── Border ──────────────────────────────────────────────────────────────
+    c.strokeStyle = 'rgba(99,102,241,0.42)';
+    c.lineWidth   = 2;
+    _scRR(c, 1, 1, W - 2, H - 2, 14); c.stroke();
+
+    // Top accent gradient line
+    const tl = c.createLinearGradient(0, 0, W, 0);
+    tl.addColorStop(0,    'rgba(99,102,241,0)');
+    tl.addColorStop(0.2,  '#6366f1');
+    tl.addColorStop(0.5,  '#a855f7');
+    tl.addColorStop(0.8,  '#06b6d4');
+    tl.addColorStop(1,    'rgba(6,182,212,0)');
+    c.strokeStyle = tl; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(0, 3); c.lineTo(W, 3); c.stroke();
+
+    // ── Logo badge ───────────────────────────────────────────────────────────
+    const badgeG = c.createLinearGradient(52, 42, 82, 74);
+    badgeG.addColorStop(0, '#6366f1');
+    badgeG.addColorStop(1, '#06b6d4');
+    c.fillStyle = badgeG;
+    c.beginPath(); c.arc(67, 58, 16, 0, Math.PI * 2); c.fill();
+
+    // Lightning bolt shape inside badge
+    c.fillStyle = 'rgba(255,255,255,0.92)';
+    c.beginPath();
+    c.moveTo(63, 47); c.lineTo(70, 59); c.lineTo(65, 59);
+    c.lineTo(71, 70); c.lineTo(60, 57); c.lineTo(65, 57);
+    c.closePath(); c.fill();
+
+    // "WebSpeedTest" brand text
+    c.textAlign = 'left';
+    c.font = 'bold 31px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    const brandG = c.createLinearGradient(92, 0, 360, 0);
+    brandG.addColorStop(0, '#818cf8');
+    brandG.addColorStop(1, '#22d3ee');
+    c.fillStyle = brandG;
+    c.fillText('WebSpeedTest', 92, 69);
+
+    // Tagline
+    c.font = '500 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.32)';
+    c.fillText('Network Speed Test', 92, 91);
+
+    // Date/time — right aligned
+    c.font = '500 19px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.46)';
+    c.textAlign = 'right';
+    c.fillText(item.displayTs || '', W - 60, 69);
+    c.textAlign = 'left';
+
+    // Header divider
+    c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(56, 110); c.lineTo(W - 56, 110); c.stroke();
+
+    // ── Download & Upload blocks ─────────────────────────────────────────────
+    const dlVal = item.download != null ? String(item.download) : '—';
+    const ulVal = item.upload   != null ? String(item.upload)   : '—';
+
+    _scSpeedBlock(c, 300, dlVal, '\u2193', 'UNDUHAN',  '#22d3ee', '#0891b2');
+    _scSpeedBlock(c, 900, ulVal, '\u2191', 'UNGGAHAN', '#818cf8', '#4f46e5');
+
+    // Vertical dashed divider between DL and UL
+    c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+    c.setLineDash([5, 8]);
+    c.beginPath(); c.moveTo(W / 2, 120); c.lineTo(W / 2, 418); c.stroke();
+    c.setLineDash([]);
+
+    // ── Ping & Jitter pills ──────────────────────────────────────────────────
+    const pingVal = item.ping   != null ? String(item.ping)   : '—';
+    const jitVal  = item.jitter != null ? String(item.jitter) : '—';
+
+    const pW = 216, pH = 84, pGap = 28;
+    const pStart = (W - (pW * 2 + pGap)) / 2;
+    const pY = 428;
+
+    _scPill(c, pStart,          pY, pW, pH, 'PING',   pingVal, 'ms', '#f59e0b', 'rgba(245,158,11,0.10)');
+    _scPill(c, pStart + pW + pGap, pY, pW, pH, 'JITTER', jitVal,  'ms', '#fbbf24', 'rgba(251,191,36,0.08)');
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(56, 545); c.lineTo(W - 56, 545); c.stroke();
+
+    // Server name — truncate if too long
+    const srvRaw  = item.displayName || '—';
+    const srvDisp = srvRaw.length > 58 ? srvRaw.slice(0, 55) + '...' : srvRaw;
+    c.font = '500 18px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.50)';
+    c.textAlign = 'left';
+    c.fillText('Server: ' + srvDisp, 60, 584);
+
+    // Branding watermark — right
+    c.font = '400 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.22)';
+    c.textAlign = 'right';
+    c.fillText('Dibuat dengan WebSpeedTest', W - 60, 584);
+    c.textAlign = 'left';
+
+    return cv;
+}
+
+// ── Canvas helper: draw speed block (Download or Upload) ────────────────────
+function _scSpeedBlock(c, cx, value, arrow, label, colorA, colorB) {
+    c.textAlign = 'center';
+
+    // Arrow ↓ or ↑
+    c.font = 'bold 54px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = colorA;
+    c.fillText(arrow, cx, 178);
+
+    // Big speed number — gradient
+    c.font = 'bold 86px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    const vg = c.createLinearGradient(cx - 220, 0, cx + 220, 0);
+    vg.addColorStop(0, colorB); vg.addColorStop(1, colorA);
+    c.fillStyle = vg;
+    c.fillText(value, cx, 300);
+
+    // "Mbps" unit
+    c.font = '600 26px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.42)';
+    c.fillText('Mbps', cx, 338);
+
+    // Label (UNDUHAN / UNGGAHAN)
+    c.font = '700 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = colorA;
+    c.fillText(label, cx, 394);
+
+    c.textAlign = 'left';
+}
+
+// ── Canvas helper: draw Ping / Jitter pill ───────────────────────────────────
+function _scPill(c, x, y, w, h, label, value, unit, color, bgColor) {
+    // Pill background
+    c.fillStyle = bgColor;
+    _scRR(c, x, y, w, h, 12); c.fill();
+
+    // Pill border (semi-transparent)
+    c.globalAlpha = 0.38;
+    c.strokeStyle = color; c.lineWidth = 1;
+    _scRR(c, x, y, w, h, 12); c.stroke();
+    c.globalAlpha = 1;
+
+    const cx = x + w / 2;
+    c.textAlign = 'center';
+
+    // Label
+    c.font = '700 13px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = 'rgba(255,255,255,0.38)';
+    c.fillText(label, cx, y + 24);
+
+    // Value + unit (combined)
+    c.font = 'bold 38px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
+    c.fillStyle = color;
+    c.fillText(`${value} ${unit}`, cx, y + 67);
+
+    c.textAlign = 'left';
+}
+
+// ── Canvas helpers ───────────────────────────────────────────────────────────
+function _scGlow(c, W, H, x, y, r, color) {
+    const g = c.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+}
+
+function _scRR(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.lineTo(x + w - r, y);      c.quadraticCurveTo(x + w, y,     x + w, y + r);
+    c.lineTo(x + w, y + h - r);  c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    c.lineTo(x + r, y + h);      c.quadraticCurveTo(x,     y + h, x,         y + h - r);
+    c.lineTo(x, y + r);          c.quadraticCurveTo(x,     y,     x + r,     y);
+    c.closePath();
 }

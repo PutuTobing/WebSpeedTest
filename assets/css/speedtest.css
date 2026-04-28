@@ -774,6 +774,41 @@
 .shi-dl-c     { color: #818cf8; }
 .shi-ul-c     { color: #22d3ee; }
 
+/* Share meta group: timestamp + share button grouped at right */
+.shi-hdr-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Share button inside each history item */
+.shi-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 13px 5px 10px;
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 20px;
+    background: rgba(99,102,241,0.08);
+    color: #818cf8;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.shi-share-btn svg { flex-shrink: 0; }
+.shi-share-btn:hover {
+    background: rgba(99,102,241,0.2);
+    border-color: rgba(99,102,241,0.65);
+    color: #c7d2fe;
+}
+.shi-share-btn:active { transform: scale(0.95); }
+
 /* ── Responsive ─────────────────────────────────────────────── */
 /* Auto-select hint line */
 .st-auto-hint {
@@ -910,6 +945,9 @@
     .shi-header { padding: 9px 12px 8px; }
     .shi-hdr-name { font-size: 0.82rem; }
     .shi-hdr-ts { font-size: 0.68rem; }
+    .shi-hdr-meta { gap: 8px; }
+    .shi-share-btn { padding: 5px 9px; }
+    .shi-share-btn .ssbtn-txt { display: none; }
     .shi-blocks { grid-template-columns: repeat(2, 1fr); }
     .shi-block {
         padding: 8px 10px;
