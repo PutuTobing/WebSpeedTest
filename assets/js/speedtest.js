@@ -1049,7 +1049,7 @@ async function generateShareCard(item) {
     c.font = '400 15px system-ui,-apple-system,"Segoe UI",Arial,sans-serif';
     c.fillStyle = 'rgba(255,255,255,0.22)';
     c.textAlign = 'right';
-    c.fillText('Dibuat dengan ' + brandMain, W - 60, 584);
+    c.fillText('Dibuat oleh server ' + brandMain, W - 60, 584);
     c.textAlign = 'left';
 
     return cv;
