@@ -12,6 +12,15 @@
     const FALLBACK_URL  = 'https://ipinfo.io/json';
     const TIMEOUT_MS    = 6000;
 
+    // Resolve backend API base (same logic as config.js)
+    function _apiBase() {
+        if (window.API_URL) return window.API_URL;
+        const p = location.port;
+        return (p === '' || p === '80' || p === '443')
+            ? ''                    // same-origin (nginx production)
+            : 'http://localhost:3001';
+    }
+
     function setText(id, html) {
         const el = document.getElementById(id);
         if (el) el.innerHTML = html;
@@ -95,15 +104,16 @@
 
     async function detectClientInfo() {
         try {
-            // Try ip-api.com first (more accurate city/region data)
-            const data = await fetchWithTimeout(PRIMARY_URL, TIMEOUT_MS);
+            // Use backend proxy to avoid Mixed Content on HTTPS + CORS issues
+            const proxyUrl = `${_apiBase()}/api/geolocate?ip=client`;
+            const data = await fetchWithTimeout(proxyUrl, TIMEOUT_MS);
             if (data.status === 'success') {
                 applyPrimaryData(data);
             } else {
-                throw new Error('ip-api returned non-success');
+                throw new Error('geolocate proxy returned non-success');
             }
         } catch (_) {
-            // Fallback to ipinfo.io
+            // Fallback to ipinfo.io (HTTPS, safe from both HTTP and HTTPS pages)
             try {
                 const data = await fetchWithTimeout(FALLBACK_URL, TIMEOUT_MS);
                 if (data.ip) {

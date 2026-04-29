@@ -1147,14 +1147,27 @@
 
             // Auto-select server with lowest latency
             if (autoHint) autoHint.textContent = '⏳ Memilih server terbaik berdasarkan latensi…';
-            const results = await Promise.all(endpoints.map(async ep => {
-                const ac = new AbortController();
-                const t = setTimeout(() => ac.abort(), 3000);
-                const start = performance.now();
+
+            // Filter out loopback/localhost endpoints (blocked by browser from HTTPS origins)
+            const reachableEndpoints = endpoints.filter(ep => {
                 try {
-                    await fetch(`${ep.value}/ping`, { cache: 'no-cache', signal: ac.signal });
+                    const host = new URL(ep.value).hostname;
+                    return !/^(localhost$|127\.|::1$)/.test(host);
+                } catch { return false; }
+            });
+
+            // Proxy pings through backend to avoid Mixed Content (HTTP server from HTTPS page)
+            const apiBase = window.API_URL || '';
+            const results = await Promise.all(reachableEndpoints.map(async ep => {
+                const ac = new AbortController();
+                const t = setTimeout(() => ac.abort(), 4000);
+                try {
+                    const r = await fetch(`${apiBase}/api/ping-server?url=${encodeURIComponent(ep.value)}`, {
+                        cache: 'no-cache', signal: ac.signal
+                    });
                     clearTimeout(t);
-                    return { ep, latency: Math.round(performance.now() - start) };
+                    const d = await r.json();
+                    return { ep, latency: (d.ok && d.latency < Infinity) ? d.latency : Infinity };
                 } catch { clearTimeout(t); return { ep, latency: Infinity }; }
             }));
             const best = results.filter(r => r.latency < Infinity).sort((a, b) => a.latency - b.latency)[0];
