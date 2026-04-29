@@ -910,11 +910,12 @@ async function generateShareCard(item) {
     // Ambil site config dari window._siteConfig (sudah di-fetch oleh site-config.js
     // saat page load) → tidak perlu fetch ulang, selalu up-to-date.
     // Fallback: localStorage cache, lalu API jika keduanya kosong.
-    let siteCfg = window._siteConfig || {};
-    if (!siteCfg.logoUrl && !siteCfg.brandMain) {
-        try { siteCfg = JSON.parse(localStorage.getItem('site_config') || '{}'); } catch {}
+    let siteCfg = (window._siteConfig && (window._siteConfig.logoUrl || window._siteConfig.brandMain))
+        ? window._siteConfig : null;
+    if (!siteCfg) {
+        try { const r = localStorage.getItem('site_config'); if (r) siteCfg = JSON.parse(r); } catch {}
     }
-    if (!siteCfg.logoUrl && !siteCfg.brandMain) {
+    if (!siteCfg || (!siteCfg.logoUrl && !siteCfg.brandMain)) {
         try {
             const _apiBase = window.API_URL || '';
             const r = await fetch(`${_apiBase}/api/site-settings`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
@@ -926,11 +927,13 @@ async function generateShareCard(item) {
                     try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
                 }
             }
-        } catch {}
+        } catch (e) { console.warn('[ShareCard] site-settings fetch gagal:', e.message); }
     }
+    siteCfg = siteCfg || {};
     const brandMain = (siteCfg.brandMain || 'WebSpeedTest').trim();
     const brandSub  = (siteCfg.brandSub  || 'Network Speed Test').trim();
     const logoUrl   = siteCfg.logoUrl || '';
+    console.log('[ShareCard] config:', { brandMain, logoUrl: logoUrl || '(kosong—fallback ke ikon petir)' });
 
     // ── Background ──────────────────────────────────────────────────────────
     const bg = c.createLinearGradient(0, 0, W, H);
@@ -1000,17 +1003,23 @@ async function generateShareCard(item) {
     if (logoUrl) {
         try {
             const proxyUrl = `${window.API_URL || ''}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
+            // Gunakan fetch → blob URL: lebih handal dari new Image() + crossOrigin
+            // karena tidak ada isu CORS cache dan canvas tidak terkena taint.
+            const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
+            if (!resp.ok) throw new Error(`proxy-image HTTP ${resp.status}`);
+            const blob    = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
-                im.crossOrigin = 'anonymous';
                 im.onload  = () => resolve(im);
                 im.onerror = reject;
-                im.src = proxyUrl;
+                im.src = blobUrl;
             });
+            URL.revokeObjectURL(blobUrl);
             // Gambar logo langsung tanpa clip/cincin — tampil penuh apa adanya
             c.drawImage(img, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
             logoLoaded = true;
-        } catch { /* fallback */ }
+        } catch (e) { console.warn('[ShareCard] Logo gagal dimuat:', e.message); }
     }
 
     if (!logoLoaded) {
