@@ -907,9 +907,24 @@ async function generateShareCard(item) {
     cv.height = H;
     const c = cv.getContext('2d');
 
-    // Ambil site config dari cache localStorage (sudah di-set oleh site-config.js)
+    // Ambil site config — prioritas: (1) API langsung, (2) cache localStorage
+    const _scApiBase = window.API_URL || '';
     let siteCfg = {};
-    try { siteCfg = JSON.parse(localStorage.getItem('site_config') || '{}'); } catch {}
+    try {
+        const r = await fetch(`${_scApiBase}/api/site-settings`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
+        if (r.ok) {
+            const d = await r.json();
+            if (d && Object.keys(d).length > 0) {
+                siteCfg = d;
+                // Update cache agar site-config.js juga menemukan data terbaru
+                try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
+            }
+        }
+    } catch {}
+    // Fallback ke localStorage jika API gagal
+    if (!siteCfg.logoUrl && !siteCfg.brandMain) {
+        try { siteCfg = JSON.parse(localStorage.getItem('site_config') || '{}'); } catch {}
+    }
     const brandMain = (siteCfg.brandMain || 'WebSpeedTest').trim();
     const brandSub  = (siteCfg.brandSub  || 'Network Speed Test').trim();
     const logoUrl   = siteCfg.logoUrl || '';
@@ -981,7 +996,7 @@ async function generateShareCard(item) {
 
     if (logoUrl) {
         try {
-            const proxyUrl = `${window.API_URL || 'http://localhost:3001'}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
+            const proxyUrl = `${_scApiBase}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
                 im.crossOrigin = 'anonymous';
