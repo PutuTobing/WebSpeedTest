@@ -907,33 +907,59 @@ async function generateShareCard(item) {
     cv.height = H;
     const c = cv.getContext('2d');
 
-    // Ambil site config dari window._siteConfig (sudah di-fetch oleh site-config.js
-    // saat page load) → tidak perlu fetch ulang, selalu up-to-date.
-    // Fallback: localStorage cache, lalu API jika keduanya kosong.
-    let siteCfg = (window._siteConfig && (window._siteConfig.logoUrl || window._siteConfig.brandMain))
-        ? window._siteConfig : null;
-    if (!siteCfg) {
-        try { const r = localStorage.getItem('site_config'); if (r) siteCfg = JSON.parse(r); } catch {}
+    // ── Site config: baca dari DOM dulu (sudah diisi site-config.js saat load)
+    // Ini cara paling andal: navbar sudah menampilkan data yang benar,
+    // kita baca dari elemen yang sama — tidak perlu API call atau cache.
+    const domBrandMain = document.querySelector('.lbn-main')?.textContent?.trim();
+    const domBrandSub  = document.querySelector('.lbn-sub')?.textContent?.trim();
+    const domLogoSrc   = document.querySelector('img.logo-img')?.src;
+
+    // Fallback chain: DOM → window._siteConfig → localStorage → API
+    let brandMain = domBrandMain || '';
+    let brandSub  = domBrandSub  || '';
+    let logoUrl   = (domLogoSrc && !domLogoSrc.endsWith('/')) ? domLogoSrc : '';
+
+    // Hilangkan blob URL (terjadi jika logo sudah di-proxy sebelumnya)
+    if (logoUrl.startsWith('blob:')) logoUrl = '';
+
+    if (!brandMain || !logoUrl) {
+        // Coba window._siteConfig
+        const sc = window._siteConfig;
+        if (sc) {
+            if (!brandMain) brandMain = sc.brandMain || '';
+            if (!brandSub)  brandSub  = sc.brandSub  || '';
+            if (!logoUrl)   logoUrl   = sc.logoUrl   || '';
+        }
     }
-    if (!siteCfg || (!siteCfg.logoUrl && !siteCfg.brandMain)) {
+    if (!brandMain || !logoUrl) {
+        // Coba localStorage
         try {
-            const _apiBase = window.API_URL || '';
-            const r = await fetch(`${_apiBase}/api/site-settings`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
+            const cached = JSON.parse(localStorage.getItem('site_config') || '{}');
+            if (!brandMain) brandMain = cached.brandMain || '';
+            if (!brandSub)  brandSub  = cached.brandSub  || '';
+            if (!logoUrl)   logoUrl   = cached.logoUrl   || '';
+        } catch {}
+    }
+    if (!brandMain || !logoUrl) {
+        // Last resort: API langsung
+        try {
+            const r = await fetch(`${window.API_URL || ''}/api/site-settings`,
+                { cache: 'no-cache', signal: AbortSignal.timeout(4000) });
             if (r.ok) {
                 const d = await r.json();
-                if (d && Object.keys(d).length > 0) {
-                    siteCfg = d;
+                if (d) {
+                    if (!brandMain) brandMain = d.brandMain || '';
+                    if (!brandSub)  brandSub  = d.brandSub  || '';
+                    if (!logoUrl)   logoUrl   = d.logoUrl   || '';
                     window._siteConfig = d;
                     try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
                 }
             }
-        } catch (e) { console.warn('[ShareCard] site-settings fetch gagal:', e.message); }
+        } catch (e) { console.warn('[ShareCard] API fetch gagal:', e.message); }
     }
-    siteCfg = siteCfg || {};
-    const brandMain = (siteCfg.brandMain || 'WebSpeedTest').trim();
-    const brandSub  = (siteCfg.brandSub  || 'Network Speed Test').trim();
-    const logoUrl   = siteCfg.logoUrl || '';
-    console.log('[ShareCard] config:', { brandMain, logoUrl: logoUrl || '(kosong—fallback ke ikon petir)' });
+    brandMain = brandMain || 'WebSpeedTest';
+    brandSub  = brandSub  || 'Network Speed Test';
+    console.log('[ShareCard] config:', { brandMain, logoUrl: logoUrl || '(kosong—fallback ikon petir)' });
 
     // ── Background ──────────────────────────────────────────────────────────
     const bg = c.createLinearGradient(0, 0, W, H);
@@ -1019,7 +1045,17 @@ async function generateShareCard(item) {
             // Gambar logo langsung tanpa clip/cincin — tampil penuh apa adanya
             c.drawImage(img, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
             logoLoaded = true;
-        } catch (e) { console.warn('[ShareCard] Logo gagal dimuat:', e.message); }
+        } catch (e) {
+            console.warn('[ShareCard] Proxy logo gagal, coba dari DOM img:', e.message);
+            // Fallback: gunakan elemen <img class="logo-img"> yang sudah ter-load di browser
+            const domImg = document.querySelector('img.logo-img');
+            if (domImg && domImg.complete && domImg.naturalWidth > 0) {
+                try {
+                    c.drawImage(domImg, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
+                    logoLoaded = true;
+                } catch (e2) { console.warn('[ShareCard] drawImage dari DOM gagal (taint?):', e2.message); }
+            }
+        }
     }
 
     if (!logoLoaded) {
