@@ -205,13 +205,15 @@ async function testPing() {
     // ── Warmup: 3 paket GET untuk pastikan koneksi TCP sudah terbuka ──────────
     // GET tidak punya request body sehingga server langsung membalas "pong"
     // tanpa membaca/parsing body → overhead minimum, mendekati ICMP ping.
+    const _apiBaseWarmup = window.API_URL || '';
+    const _warmupUrl = `${_apiBaseWarmup}/api/ping-server?url=${encodeURIComponent(currentServer)}`;
     for (let w = 0; w < 3; w++) {
         try {
-            const wr = await fetchWithTimeout(`${currentServer}/ping`, {
+            const wr = await fetchWithTimeout(_warmupUrl, {
                 method: 'GET',
                 cache: 'no-store'
-            }, CONFIG.PING_TIMEOUT);
-            await wr.text();
+            }, CONFIG.PING_TIMEOUT + 2000);
+            await wr.json();
         } catch (e) {
             if (e.name === 'AbortError') {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
@@ -240,6 +242,10 @@ async function testPing() {
     //   dan menghasilkan 20 sampel dalam ~1 detik.
     const pingTimes = [];
 
+    // Use backend proxy for ping to avoid Mixed Content errors (HTTPS page → HTTP server)
+    const apiBase = window.API_URL || '';
+    const pingProxyUrl = `${apiBase}/api/ping-server?url=${encodeURIComponent(currentServer)}`;
+
     for (let i = 0; i < CONFIG.PING_COUNT; i++) {
         const controller = new AbortController();
         abortControllers.push(controller);
@@ -247,19 +253,18 @@ async function testPing() {
         const progress = 10 + Math.round(i * (15 / CONFIG.PING_COUNT));
         updateProgress(progress, `Ping ${i + 1}/${CONFIG.PING_COUNT}...`);
 
-        const t0 = performance.now();
-
         try {
-            const resp = await fetchWithTimeout(`${currentServer}/ping`, {
+            const resp = await fetchWithTimeout(pingProxyUrl, {
                 method: 'GET',
                 cache: 'no-store',
                 signal: controller.signal
-            }, CONFIG.PING_TIMEOUT);
+            }, CONFIG.PING_TIMEOUT + 2000); // extra buffer for proxy hop
 
             if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-            await resp.text();
+            const d = await resp.json();
+            if (!d.ok) throw new Error('ping-server proxy failed');
 
-            const rtt = parseFloat((performance.now() - t0).toFixed(1));
+            const rtt = d.latency;
             pingTimes.push(rtt);
 
             // Tampilkan minimum berjalan agar user melihat angka terendah
@@ -326,6 +331,10 @@ async function testDownload() {
     document.querySelector('.metric-card.download')?.classList.add('testing');
     setGaugeDisplay('UNDUH', null, 'Mbps', '#22d3ee');
 
+    const _dlApiBase = window.API_URL || '';
+    const _dlTarget  = encodeURIComponent(currentServer);
+    const _dlProxy   = `${_dlApiBase}/api/speedtest-proxy?target=${_dlTarget}`;
+
     // ── Warmup phase ─────────────────────────────────────────────────────────
     // TCP slow-start ramps up slowly; discard the first 2 seconds so that
     // measured bytes reflect steady-state throughput, not ramp-up.
@@ -339,7 +348,7 @@ async function testDownload() {
         warmupControllers.push(wc);
         return (async () => {
             try {
-                const resp = await fetch(`${currentServer}/download?duration=3`, {
+                const resp = await fetch(`${_dlProxy}&duration=3`, {
                     method: 'GET', cache: 'no-store', signal: wc.signal
                 });
                 if (!resp.body) return;
@@ -375,7 +384,7 @@ async function testDownload() {
             while (performance.now() < endTime) {
                 try {
                     const response = await fetchWithTimeout(
-                        `${currentServer}/download?duration=${CONFIG.DOWNLOAD_DURATION}`,
+                        `${_dlProxy}&duration=${CONFIG.DOWNLOAD_DURATION}`,
                         {
                             method: 'GET',
                             cache: 'no-store',
@@ -461,6 +470,10 @@ async function testUpload() {
     document.querySelector('.metric-card.upload')?.classList.add('testing');
     setGaugeDisplay('UNGGAH', null, 'Mbps', '#fbbf24');
 
+    const _ulApiBase = window.API_URL || '';
+    const _ulTarget  = encodeURIComponent(currentServer);
+    const _ulProxy   = `${_ulApiBase}/api/speedtest-proxy?target=${_ulTarget}`;
+
     // ── Upload data buffer ────────────────────────────────────────────────────
     // 4MB chunks: amortizes per-request HTTP overhead (was 64KB = bottleneck).
     // Bandwidth-Delay Product for 1Gbps@8ms = 1MB, so 4MB covers 4× BDP.
@@ -488,7 +501,7 @@ async function testUpload() {
             while (performance.now() < endTime) {
                 try {
                     const response = await fetchWithTimeout(
-                        `${currentServer}/upload`,
+                        _ulProxy,
                         {
                             method: 'POST',
                             body: uploadData,
