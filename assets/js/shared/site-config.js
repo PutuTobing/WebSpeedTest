@@ -29,6 +29,10 @@
         } catch {}
     }
 
+    // Expose config globally so other scripts (e.g. generateShareCard) can
+    // access the already-fetched data without making a redundant API call.
+    window._siteConfig = cfg || {};
+
     // Dispatch event so page-specific scripts can react without polling
     document.dispatchEvent(new CustomEvent('siteConfigReady', { detail: cfg || {} }));
 

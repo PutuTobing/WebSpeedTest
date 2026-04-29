@@ -907,23 +907,26 @@ async function generateShareCard(item) {
     cv.height = H;
     const c = cv.getContext('2d');
 
-    // Ambil site config — prioritas: (1) API langsung, (2) cache localStorage
-    const _scApiBase = window.API_URL || '';
-    let siteCfg = {};
-    try {
-        const r = await fetch(`${_scApiBase}/api/site-settings`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
-        if (r.ok) {
-            const d = await r.json();
-            if (d && Object.keys(d).length > 0) {
-                siteCfg = d;
-                // Update cache agar site-config.js juga menemukan data terbaru
-                try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
-            }
-        }
-    } catch {}
-    // Fallback ke localStorage jika API gagal
+    // Ambil site config dari window._siteConfig (sudah di-fetch oleh site-config.js
+    // saat page load) → tidak perlu fetch ulang, selalu up-to-date.
+    // Fallback: localStorage cache, lalu API jika keduanya kosong.
+    let siteCfg = window._siteConfig || {};
     if (!siteCfg.logoUrl && !siteCfg.brandMain) {
         try { siteCfg = JSON.parse(localStorage.getItem('site_config') || '{}'); } catch {}
+    }
+    if (!siteCfg.logoUrl && !siteCfg.brandMain) {
+        try {
+            const _apiBase = window.API_URL || '';
+            const r = await fetch(`${_apiBase}/api/site-settings`, { cache: 'no-cache', signal: AbortSignal.timeout(3000) });
+            if (r.ok) {
+                const d = await r.json();
+                if (d && Object.keys(d).length > 0) {
+                    siteCfg = d;
+                    window._siteConfig = d;
+                    try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
+                }
+            }
+        } catch {}
     }
     const brandMain = (siteCfg.brandMain || 'WebSpeedTest').trim();
     const brandSub  = (siteCfg.brandSub  || 'Network Speed Test').trim();
@@ -996,7 +999,7 @@ async function generateShareCard(item) {
 
     if (logoUrl) {
         try {
-            const proxyUrl = `${_scApiBase}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
+            const proxyUrl = `${window.API_URL || ''}/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
             const img = await new Promise((resolve, reject) => {
                 const im = new Image();
                 im.crossOrigin = 'anonymous';
