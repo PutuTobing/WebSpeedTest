@@ -1064,10 +1064,12 @@
                             <div class="ssp-item-name">${name}</div>
                             <div class="ssp-item-meta">
                                 ${loc ? `<span class="ssp-item-loc">📍 ${loc}</span>` : ''}
-                                ${distBadge}
                             </div>
                         </div>
-                        ${pingBadge}
+                        <div class="ssp-item-right">
+                            ${pingBadge}
+                            ${distBadge}
+                        </div>
                     </li>`;
                 }).join('');
 
