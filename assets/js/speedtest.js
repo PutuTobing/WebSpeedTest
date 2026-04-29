@@ -955,11 +955,10 @@ async function generateShareCard(item) {
                     try { localStorage.setItem('site_config', JSON.stringify(d)); } catch {}
                 }
             }
-        } catch (e) { console.warn('[ShareCard] API fetch gagal:', e.message); }
+        } catch { /* silent */ }
     }
     brandMain = brandMain || 'WebSpeedTest';
     brandSub  = brandSub  || 'Network Speed Test';
-    console.log('[ShareCard] config:', { brandMain, logoUrl: logoUrl || '(kosong—fallback ikon petir)' });
 
     // ── Background ──────────────────────────────────────────────────────────
     const bg = c.createLinearGradient(0, 0, W, H);
@@ -1045,15 +1044,14 @@ async function generateShareCard(item) {
             // Gambar logo langsung tanpa clip/cincin — tampil penuh apa adanya
             c.drawImage(img, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
             logoLoaded = true;
-        } catch (e) {
-            console.warn('[ShareCard] Proxy logo gagal, coba dari DOM img:', e.message);
+        } catch {
             // Fallback: gunakan elemen <img class="logo-img"> yang sudah ter-load di browser
             const domImg = document.querySelector('img.logo-img');
             if (domImg && domImg.complete && domImg.naturalWidth > 0) {
                 try {
                     c.drawImage(domImg, LOGO_X, LOGO_CY - LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
                     logoLoaded = true;
-                } catch (e2) { console.warn('[ShareCard] drawImage dari DOM gagal (taint?):', e2.message); }
+                } catch { /* silent */ }
             }
         }
     }
