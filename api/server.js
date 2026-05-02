@@ -54,10 +54,16 @@ async function initDB() {
             linked_server_id VARCHAR(100),
             added_by         VARCHAR(50),
             added_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (linked_server_id) REFERENCES servers(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
+    // Migration: add added_at column for older installations that only have created_at
+    try {
+        await db.query(`ALTER TABLE endpoints ADD COLUMN added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        await db.query(`UPDATE endpoints SET added_at = COALESCE(created_at, NOW()) WHERE added_at IS NULL`);
+    } catch (_) { /* column already exists, skip */ }
     await db.query(`
         CREATE TABLE IF NOT EXISTS speedtest_history (
             id            INT AUTO_INCREMENT PRIMARY KEY,

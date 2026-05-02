@@ -11,7 +11,7 @@ function mapRow(r) {
     return {
         id: r.id, name: r.name, baseUrl: r.base_url, location: r.location,
         isActive: !!r.is_active, linkedServerId: r.linked_server_id,
-        addedBy: r.added_by, addedAt: r.added_at, updatedAt: r.updated_at
+        addedBy: r.added_by, addedAt: r.added_at || r.created_at, updatedAt: r.updated_at
     };
 }
 
@@ -26,7 +26,7 @@ router.get('/active', async (_req, res) => {
 // GET /api/endpoints  (admin)
 router.get('/', adminMiddleware, async (_req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM endpoints ORDER BY added_at DESC');
+        const [rows] = await db.query('SELECT * FROM endpoints ORDER BY COALESCE(added_at, created_at, updated_at) DESC');
         res.json(rows.map(mapRow));
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
