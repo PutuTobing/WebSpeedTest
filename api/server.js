@@ -4,6 +4,86 @@ const cors    = require('cors');
 const bcrypt  = require('bcryptjs');
 const db      = require('./database');
 
+// Auto-create all required tables on startup
+async function initDB() {
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            username      VARCHAR(50)  UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            role          ENUM('user','admin') DEFAULT 'user',
+            fullname      VARCHAR(100) NOT NULL,
+            email         VARCHAR(100),
+            status        ENUM('active','inactive') DEFAULT 'active',
+            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS servers (
+            id                 VARCHAR(100) PRIMARY KEY,
+            company_name       VARCHAR(100) NOT NULL,
+            location           VARCHAR(100) NOT NULL,
+            bandwidth_capacity VARCHAR(20)  NOT NULL,
+            server_url         VARCHAR(255) NOT NULL,
+            cpu_cores          INT  DEFAULT 1,
+            ram_size           INT  DEFAULT 1,
+            contact_name       VARCHAR(100),
+            contact_email      VARCHAR(100),
+            company_website    VARCHAR(255),
+            additional_notes   TEXT,
+            status             ENUM('pending','checking','approved','error') DEFAULT 'pending',
+            downtime_count     INT DEFAULT 0,
+            last_status        VARCHAR(10),
+            last_checked       TIMESTAMP NULL,
+            created_by         VARCHAR(50),
+            approved_by        VARCHAR(50),
+            approved_at        TIMESTAMP NULL,
+            status_changed_by  VARCHAR(50),
+            created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS endpoints (
+            id               VARCHAR(100) PRIMARY KEY,
+            name             VARCHAR(100) NOT NULL,
+            base_url         VARCHAR(255) NOT NULL,
+            location         VARCHAR(100) NOT NULL,
+            is_active        BOOLEAN DEFAULT TRUE,
+            linked_server_id VARCHAR(100),
+            added_by         VARCHAR(50),
+            added_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (linked_server_id) REFERENCES servers(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS speedtest_history (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            username      VARCHAR(50),
+            server_url    VARCHAR(255),
+            server_name   VARCHAR(100),
+            ping_ms       FLOAT,
+            jitter_ms     FLOAT,
+            download_mbps FLOAT,
+            upload_mbps   FLOAT,
+            tested_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_username  (username),
+            INDEX idx_tested_at (tested_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS site_settings (
+            id           INT NOT NULL DEFAULT 1,
+            settings_json TEXT NOT NULL,
+            updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    await db.query(`INSERT IGNORE INTO site_settings (id, settings_json) VALUES (1, '{}')`);
+}
+
 const app = express();
 
 // Trust reverse proxy (nginx) — needed for correct req.ip / x-forwarded-for parsing
@@ -69,5 +149,11 @@ async function initDefaultAdmin() {
 const PORT = process.env.API_PORT || 3001;
 app.listen(PORT, '0.0.0.0', async () => {
     console.log(`SpeedTest API berjalan di port ${PORT}`);
+    try {
+        await initDB();
+        console.log('Database tables verified/created.');
+    } catch (err) {
+        console.error('initDB error:', err.message);
+    }
     await initDefaultAdmin();
 });
