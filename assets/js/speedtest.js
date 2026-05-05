@@ -202,49 +202,44 @@ async function testPing() {
     document.querySelector('.metric-card.ping')?.classList.add('testing');
     setGaugeDisplay('PING', null, 'ms', null);
 
-    // ── Warmup: 3 paket GET untuk pastikan koneksi TCP sudah terbuka ──────────
-    // GET tidak punya request body sehingga server langsung membalas "pong"
-    // tanpa membaca/parsing body → overhead minimum, mendekati ICMP ping.
-    const _apiBaseWarmup = window.API_URL || '';
-    const _warmupUrl = `${_apiBaseWarmup}/api/ping-server?url=${encodeURIComponent(currentServer)}`;
+    // ── Target: client browser langsung ping ke backend speedtest server ──────
+    // RTT diukur oleh client menggunakan performance.now() sebelum & sesudah
+    // fetch, sehingga hasil mencerminkan latensi jaringan dari perangkat client
+    // (HP/laptop) ke backend speedtest, bukan server-to-server.
+    const serverBase = currentServer.replace(/\/+$/, '');
+    const directPingUrl = `${serverBase}/ping`;
+
+    // ── Warmup: 3 paket langsung dari client ke backend ───────────────────────
+    // Membuka koneksi TCP agar paket pengukuran berikutnya tidak termasuk
+    // overhead TCP handshake (SYN → SYN-ACK → ACK).
     for (let w = 0; w < 3; w++) {
         try {
-            const wr = await fetchWithTimeout(_warmupUrl, {
+            await fetchWithTimeout(directPingUrl, {
                 method: 'GET',
                 cache: 'no-store'
-            }, CONFIG.PING_TIMEOUT + 2000);
-            await wr.json();
-        } catch (e) {
-            if (e.name === 'AbortError') {
-                const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
-                showTestError('Ping Warmup', 'timeout', serverName);
-                throw e;
-            }
-            // Error non-timeout di warmup diabaikan
+            }, 5000);
+        } catch (_) {
+            // Error warmup diabaikan — koneksi mungkin belum ready
         }
     }
 
-    // ── Pengukuran: PING_COUNT paket GET dengan interval pendek ──────────────
+    // ── Pengukuran: PING_COUNT paket GET, RTT diukur sisi client ─────────────
     //
     // Mengapa GET (bukan POST):
-    //   POST mengharuskan server membaca seluruh request body sebelum membalas.
-    //   GET tidak punya body → server membalas "pong" seketika → overhead lebih
-    //   kecil dan hasil lebih mendekati ICMP ping dari CMD/terminal.
+    //   GET tidak punya body → server membalas seketika → overhead minimum.
     //
-    // Mengapa MINIMUM (bukan median/rata-rata):
-    //   Nilai minimum RTT = latensi jaringan murni.
-    //   Nilai yang lebih besar dari minimum disebabkan oleh variabilitas
-    //   server (GC pause, context switch) bukan kondisi jaringan.
-    //   ICMP ping di CMD juga menampilkan nilai minimum sebagai acuan.
+    // Mengapa performance.now() (bukan Date.now()):
+    //   performance.now() akurat hingga sub-milidetik, monotonic, tidak
+    //   dipengaruhi perubahan jam sistem.
     //
-    // Mengapa interval 50ms (bukan 300ms):
-    //   Interval pendek menjaga koneksi tetap hangat (tidak perlu re-handshake)
-    //   dan menghasilkan 20 sampel dalam ~1 detik.
+    // Mengapa MINIMUM (bukan rata-rata):
+    //   Nilai minimum RTT = latensi jaringan murni. Nilai lebih besar
+    //   disebabkan variabilitas OS/server, bukan kondisi jaringan.
+    //   Sama seperti output "ping" di CMD/terminal.
+    //
+    // Mengapa interval 50ms:
+    //   Menjaga koneksi tetap hangat dan menghasilkan 20 sampel dalam ~1 detik.
     const pingTimes = [];
-
-    // Use backend proxy for ping to avoid Mixed Content errors (HTTPS page → HTTP server)
-    const apiBase = window.API_URL || '';
-    const pingProxyUrl = `${apiBase}/api/ping-server?url=${encodeURIComponent(currentServer)}`;
 
     for (let i = 0; i < CONFIG.PING_COUNT; i++) {
         const controller = new AbortController();
@@ -254,20 +249,22 @@ async function testPing() {
         updateProgress(progress, `Ping ${i + 1}/${CONFIG.PING_COUNT}...`);
 
         try {
-            const resp = await fetchWithTimeout(pingProxyUrl, {
+            // Catat waktu tepat sebelum request dikirim dari browser client
+            const t0 = performance.now();
+
+            const resp = await fetchWithTimeout(directPingUrl, {
                 method: 'GET',
                 cache: 'no-store',
                 signal: controller.signal
-            }, CONFIG.PING_TIMEOUT + 2000); // extra buffer for proxy hop
+            }, CONFIG.PING_TIMEOUT);
 
-            if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-            const d = await resp.json();
-            if (!d.ok) throw new Error('ping-server proxy failed');
+            // Consume body agar RTT mencakup waktu transfer response penuh
+            await resp.text();
 
-            const rtt = d.latency;
+            // RTT = waktu total dari client mengirim → backend membalas → client terima
+            const rtt = performance.now() - t0;
             pingTimes.push(rtt);
 
-            // Tampilkan minimum berjalan agar user melihat angka terendah
             const currentMin = Math.round(Math.min(...pingTimes));
             updateProgress(
                 10 + Math.round((i + 1) * (15 / CONFIG.PING_COUNT)),
@@ -278,16 +275,12 @@ async function testPing() {
         } catch (error) {
             if (error.name === 'AbortError') {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
-                if (!isTestRunning) throw error; // manual stop
+                if (!isTestRunning) throw error; // manual stop oleh user
                 showTestError('Ping', 'timeout', serverName);
                 throw error;
             }
-            if (error.message?.includes('Server error')) {
-                const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
-                showTestError('Ping', 'server-error', serverName);
-                throw error;
-            }
             console.warn(`Ping packet ${i + 1} failed:`, error.message);
+            // Jika sudah melewati setengah sesi tapi belum ada satu pun sukses → error
             if (i >= Math.floor(CONFIG.PING_COUNT / 2) && pingTimes.length === 0) {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
                 showTestError('Ping', 'network', serverName);
@@ -301,12 +294,17 @@ async function testPing() {
         }
     }
 
-    // Ping = RTT minimum dari semua sampel (mencerminkan latensi jaringan murni,
-    // sama seperti yang ditampilkan oleh perintah ping di CMD/terminal).
+    if (pingTimes.length === 0) {
+        const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
+        showTestError('Ping', 'network', serverName);
+        throw new Error('Semua ping packet gagal');
+    }
+
+    // Ping final = RTT minimum dari semua sampel (latensi jaringan murni client)
     const minPing = Math.round(Math.min(...pingTimes));
 
     // Jitter = rata-rata selisih absolut antar paket berurutan (metode Ookla).
-    // Mengukur variabilitas/ketidakstabilan latensi, bukan besarnya latency.
+    // Mengukur variabilitas/ketidakstabilan latensi dari sisi client.
     const jitter = pingTimes.length > 1
         ? Math.round(
             pingTimes.slice(1).reduce((sum, t, i) => sum + Math.abs(t - pingTimes[i]), 0)
