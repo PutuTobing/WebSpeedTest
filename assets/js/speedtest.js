@@ -202,43 +202,44 @@ async function testPing() {
     document.querySelector('.metric-card.ping')?.classList.add('testing');
     setGaugeDisplay('PING', null, 'ms', null);
 
-    // ── Target: client browser langsung ping ke backend speedtest server ──────
-    // RTT diukur oleh client menggunakan performance.now() sebelum & sesudah
-    // fetch, sehingga hasil mencerminkan latensi jaringan dari perangkat client
-    // (HP/laptop) ke backend speedtest, bukan server-to-server.
-    const serverBase = currentServer.replace(/\/+$/, '');
-    const directPingUrl = `${serverBase}/ping`;
+    // ── Deteksi Mixed Content: HTTPS page + HTTP backend ─────────────────────
+    // Browser memblokir HTTP request dari halaman HTTPS (Mixed Content).
+    // Solusi: jika frontend HTTPS & backend HTTP → gunakan proxy Node.js.
+    //         Namun RTT tetap diukur client-side (performance.now()),
+    //         sehingga hasilnya tetap mencerminkan latensi dari perangkat client.
+    // Jika frontend HTTP atau backend HTTPS → ping langsung tanpa proxy.
+    const serverBase    = currentServer.replace(/\/+$/, '');
+    const isFrontendHttps = location.protocol === 'https:';
+    const isBackendHttp   = serverBase.startsWith('http://');
+    const needProxy       = isFrontendHttps && isBackendHttp;
 
-    // ── Warmup: 3 paket langsung dari client ke backend ───────────────────────
-    // Membuka koneksi TCP agar paket pengukuran berikutnya tidak termasuk
-    // overhead TCP handshake (SYN → SYN-ACK → ACK).
+    const directPingUrl = `${serverBase}/ping`;
+    const proxyPingUrl  = `${window.API_URL || ''}/api/ping-server?url=${encodeURIComponent(serverBase)}`;
+    const pingUrl       = needProxy ? proxyPingUrl : directPingUrl;
+
+    // ── Warmup: 3 paket untuk membuka koneksi TCP ────────────────────────────
     for (let w = 0; w < 3; w++) {
         try {
-            await fetchWithTimeout(directPingUrl, {
-                method: 'GET',
-                cache: 'no-store'
-            }, 5000);
-        } catch (_) {
-            // Error warmup diabaikan — koneksi mungkin belum ready
-        }
+            await fetchWithTimeout(pingUrl, { method: 'GET', cache: 'no-store' }, 5000);
+        } catch (_) { /* error warmup diabaikan */ }
     }
 
     // ── Pengukuran: PING_COUNT paket GET, RTT diukur sisi client ─────────────
     //
-    // Mengapa GET (bukan POST):
-    //   GET tidak punya body → server membalas seketika → overhead minimum.
+    // RTT diukur dengan performance.now() sebelum & sesudah fetch —
+    // hasilnya adalah latensi dari perangkat client (HP/laptop/PC) ke
+    // backend speedtest, bukan server-to-server.
     //
-    // Mengapa performance.now() (bukan Date.now()):
-    //   performance.now() akurat hingga sub-milidetik, monotonic, tidak
-    //   dipengaruhi perubahan jam sistem.
+    // Mode PROXY (HTTPS frontend + HTTP backend):
+    //   Client → proxy Node.js (HTTPS) → backend HTTP
+    //   RTT mencakup seluruh perjalanan dari sisi client.
+    //   Overhead proxy (dalam 1 datacenter) biasanya < 1ms, sangat kecil.
     //
-    // Mengapa MINIMUM (bukan rata-rata):
-    //   Nilai minimum RTT = latensi jaringan murni. Nilai lebih besar
-    //   disebabkan variabilitas OS/server, bukan kondisi jaringan.
-    //   Sama seperti output "ping" di CMD/terminal.
+    // Mode DIRECT (HTTP frontend atau backend HTTPS):
+    //   Client → backend langsung, RTT murni jaringan client ke backend.
     //
-    // Mengapa interval 50ms:
-    //   Menjaga koneksi tetap hangat dan menghasilkan 20 sampel dalam ~1 detik.
+    // Mengapa MINIMUM: nilai min = latensi jaringan murni (bukan avg yg
+    //   dipengaruhi GC pause/context switch server). Sama seperti CMD ping.
     const pingTimes = [];
 
     for (let i = 0; i < CONFIG.PING_COUNT; i++) {
@@ -252,7 +253,7 @@ async function testPing() {
             // Catat waktu tepat sebelum request dikirim dari browser client
             const t0 = performance.now();
 
-            const resp = await fetchWithTimeout(directPingUrl, {
+            const resp = await fetchWithTimeout(pingUrl, {
                 method: 'GET',
                 cache: 'no-store',
                 signal: controller.signal
@@ -279,8 +280,7 @@ async function testPing() {
                 showTestError('Ping', 'timeout', serverName);
                 throw error;
             }
-            console.warn(`Ping packet ${i + 1} failed:`, error.message);
-            // Jika sudah melewati setengah sesi tapi belum ada satu pun sukses → error
+            console.warn(`Ping packet ${i + 1} gagal:`, error.message);
             if (i >= Math.floor(CONFIG.PING_COUNT / 2) && pingTimes.length === 0) {
                 const serverName = serverSelect?.options[serverSelect.selectedIndex]?.dataset?.name || currentServer;
                 showTestError('Ping', 'network', serverName);
@@ -288,7 +288,6 @@ async function testPing() {
             }
         }
 
-        // Interval antar paket — pendek agar koneksi tetap hangat
         if (i < CONFIG.PING_COUNT - 1) {
             await new Promise(r => setTimeout(r, CONFIG.PING_INTERVAL));
         }
